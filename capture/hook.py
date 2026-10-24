@@ -49,10 +49,48 @@ def _grade(prompt: str, ctx: dict) -> dict:
 
 def _tap(text: str) -> bool:
     try:
-        from act import tap  # nbz's version (act/actions.py)
+        from act import tap  # nbz's version (act/actions.py) returns its logged event
     except Exception:
         from coach.act_fallback import tap
-    return tap(text)
+    r = tap(text)
+    return bool(r.get("sent")) if isinstance(r, dict) else bool(r)
+
+
+def _say(text: str) -> bool:
+    if os.getenv("REVIVE_VOICE", "1") == "0":
+        return False
+    try:
+        from act import say
+        return bool(say(text).get("sent"))
+    except Exception:
+        return False
+
+
+def _can_tap() -> bool:
+    return os.getenv("REVIVE_TAP", "1" if os.getenv("REVIVE_WHO") == "nbz" else "0") == "1"
+
+
+def _loop_hold(data: dict, prompt: str, session: str) -> dict | None:
+    """Level 2: a loop gets a hold (the prompt is blocked with a different approach), the voice and a tap."""
+    from coach import policy
+    from coach.loop import check_loop, hold_reason
+
+    st = policy._load()
+    loop = check_loop(session, prompt, data.get("transcript_path", ""), state=st)
+    if not loop:
+        return None
+    st["last_hold"] = time.time()
+    policy._save(st)
+    append_event("loop", session=session, signals=loop["signals"], minutes=loop["minutes"])
+    reason = hold_reason(loop)
+    spoke = _say("You're looping. Take two minutes.")
+    tapped = _tap("Looping: take 2") if _can_tap() else False
+    if tapped:
+        st["last_tap"] = time.time()
+        policy._save(st)
+    append_event("action", session=session, level=2, channels=["hold", "voice", "tap"], tapped=tapped,
+                 spoke=spoke, message="Looping: take 2", reason="loop: " + ", ".join(loop["signals"]))
+    return {"decision": "block", "reason": reason}
 
 
 def on_prompt(data: dict) -> dict | None:
@@ -69,6 +107,12 @@ def on_prompt(data: dict) -> dict | None:
                  correction=looks_like_correction(prompt))
     if os.getenv("REVIVE_COACH", "1") == "0":
         return None
+    try:
+        held = _loop_hold(data, prompt, session)  # cheap, no LLM: runs before grading
+        if held:
+            return held
+    except Exception:
+        _log_error("loop")
 
     ctx = recent_context(data.get("transcript_path", ""))
     grade = _grade(prompt, ctx)
@@ -80,8 +124,7 @@ def on_prompt(data: dict) -> dict | None:
 
     channels = decision.get("channels", [])
     added = silent_fix_text(ctx, grade.get("missing", [])) if "fix" in channels else ""
-    can_tap = os.getenv("REVIVE_TAP", "1" if os.getenv("REVIVE_WHO") == "nbz" else "0") == "1"
-    tapped = _tap("Slow down: context added") if ("tap" in channels and can_tap) else False
+    tapped = _tap("Slow down: context added") if ("tap" in channels and _can_tap()) else False
     append_event("action", session=session, level=decision["level"], channels=channels,
                  tapped=tapped, message="Slow down: context added" if tapped else "context added",
                  reason=decision.get("reason"), demo=body.get("source") in ("fake", "replay"))
@@ -130,7 +173,7 @@ def handle(data: dict, outcome: bool = True) -> dict | None:
 SERVER = os.getenv("REVIVE_SERVER", "http://127.0.0.1:8000")
 SERVER_TIMEOUT_S = 2.5
 # Per-prompt settings the server should apply as if it were this process.
-FORWARD_ENV = ("FAKE_STRAIN", "REVIVE_TAP", "REVIVE_COACH", "REVIVE_WHO")
+FORWARD_ENV = ("FAKE_STRAIN", "REVIVE_TAP", "REVIVE_COACH", "REVIVE_WHO", "REVIVE_VOICE")
 
 
 def via_server(data: dict) -> tuple[bool, dict | None]:
