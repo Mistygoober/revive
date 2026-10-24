@@ -171,7 +171,7 @@ def handle(data: dict, outcome: bool = True) -> dict | None:
 
 
 SERVER = os.getenv("REVIVE_SERVER", "http://127.0.0.1:8000")
-SERVER_TIMEOUT_S = 2.5
+SERVER_TIMEOUT_S = 9.0  # must exceed the grader cap (5 s) + context build, or the silent fix is lost
 # Per-prompt settings the server should apply as if it were this process.
 FORWARD_ENV = ("FAKE_STRAIN", "REVIVE_TAP", "REVIVE_COACH", "REVIVE_WHO", "REVIVE_VOICE")
 

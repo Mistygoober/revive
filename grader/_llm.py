@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import shared.config  # noqa: F401  (loads .env)
 
 MODEL = "claude-haiku-5-5"
-TIMEOUT_S = 3.0
+TIMEOUT_S = 5.0  # hotspot latency: 3 s fell back to the heuristic in Test 2
 
 _pool = ThreadPoolExecutor(max_workers=4)
 _client = None
