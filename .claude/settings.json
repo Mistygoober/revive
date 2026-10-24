@@ -6,5 +6,29 @@
       "Edit(./.env)",
       "Edit(./.env.local)"
     ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && U=\"$HOME/.local/bin/uv\"; [ -x \"$U\" ] || U=uv; \"$U\" run --quiet python capture/hook.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && U=\"$HOME/.local/bin/uv\"; [ -x \"$U\" ] || U=uv; \"$U\" run --quiet python capture/hook.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }
