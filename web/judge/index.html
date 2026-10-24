@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>Revive · judge view (placeholder)</title>
+<body style="font:14px system-ui;background:#0e1116;color:#e7eaf0;padding:16px">
+<h1>Revive: behind the scenes</h1><p>Placeholder. Live events:</p><pre id="log"></pre>
+<script>
+const log=document.getElementById("log");
+new EventSource("/stream").onmessage=e=>{log.textContent=e.data+"\n"+log.textContent;};
+</script></body>

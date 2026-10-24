@@ -20,7 +20,7 @@ Make the demo script in SPEC.md work end to end, reliably, for a 90-second video
 - Seeded demo data is allowed but always labeled DEMO DATA in the UI and in DEMO_NOTES.md.
 
 ## Commands
-- run: TODO
+- run: `uv run uvicorn server:app --host 0.0.0.0 --port 8000` (judge view at /web/judge/)
 - test: TODO
 - test: `uv run pytest`
 - tunnel (only if needed): `ngrok http 8000`
@@ -36,7 +36,7 @@ Make the demo script in SPEC.md work end to end, reliably, for a 90-second video
 ## Owners and folders
 - **Lucas:** capture/, coach/, history/, server.py, web/judge (judge view), memory/. Merges to main.
 - **nbz:** body/, act/, web/wrapped + web/insights + badges, fixtures/. Works on branch `nbz`.
-- **Shared:** pitch/, DEMO_NOTES.md.
+- **Shared:** shared/ (events log + config: change only with both agreeing), pitch/, DEMO_NOTES.md.
 Never edit the other person's folders. The contract between the halves is in docs/plan/FOR-NBZ.md and docs/plan/GAMEPLAN.md §3.
 
 ## Plan docs
