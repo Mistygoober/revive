@@ -4,10 +4,15 @@ Wired in .claude/settings.json for UserPromptSubmit and Stop. Reads the hook
 JSON from stdin. Never blocks the user and never crashes: any error is logged
 to data/hook_errors.log and the hook exits 0 with no output.
 
+Fast path: if the Revive server is running, the hook is a thin client that
+POSTs the stdin JSON to /hook (warm Anthropic client, no imports to pay for)
+and prints what comes back. If nothing listens there, it runs in-process.
+
 events.jsonl gets metadata only (no text). Raw text goes to memory/raw/
 (git-ignored) so the grader can score it.
 """
 import json
+import os
 import sys
 import time
 import traceback
@@ -50,9 +55,8 @@ def _tap(text: str) -> bool:
     return tap(text)
 
 
-def on_prompt(data: dict) -> None:
-    import os
-
+def on_prompt(data: dict) -> dict | None:
+    """Log, grade, coach. Returns the hook output (additionalContext) or None."""
     from body.state import get_body_state
     from coach.context import recent_context, silent_fix_text
     from coach.outcome import looks_like_correction
@@ -64,7 +68,7 @@ def on_prompt(data: dict) -> None:
     append_event("prompt", session=session, chars=len(prompt), project=Path(data.get("cwd") or ".").name,
                  correction=looks_like_correction(prompt))
     if os.getenv("REVIVE_COACH", "1") == "0":
-        return
+        return None
 
     ctx = recent_context(data.get("transcript_path", ""))
     grade = _grade(prompt, ctx)
@@ -72,7 +76,7 @@ def on_prompt(data: dict) -> None:
     body = get_body_state()
     decision = decide(grade, body)
     if decision.get("level") is None:
-        return
+        return None
 
     channels = decision.get("channels", [])
     added = silent_fix_text(ctx, grade.get("missing", [])) if "fix" in channels else ""
@@ -82,21 +86,21 @@ def on_prompt(data: dict) -> None:
                  tapped=tapped, message="Slow down: context added" if tapped else "context added",
                  reason=decision.get("reason"), demo=body.get("source") in ("fake", "replay"))
     if added:
-        print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": added}}))
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": added}}
+    return None
 
 
-def on_stop(data: dict) -> None:
+def on_stop(data: dict, outcome: bool = True) -> None:
     session = data.get("session_id", "")
     last = data.get("last_assistant_message") or ""
     append_raw("replies", {"session": session, "reply": last, "transcript": data.get("transcript_path", "")})
     append_event("reply", session=session, chars=len(last))
-    score_outcome(data)
+    if outcome:
+        score_outcome(data)
 
 
 def score_outcome(data: dict) -> None:
     """Outcome score for the turn that just ended. Errors are logged, never raised."""
-    import os
-
     if os.getenv("REVIVE_COACH", "1") == "0":
         return
     try:
@@ -113,15 +117,55 @@ def _log_error(where: str, t0: float | None = None) -> None:
         f.write(f"{time.ctime()} [{where}]{took}\n{traceback.format_exc()}\n")
 
 
+def handle(data: dict, outcome: bool = True) -> dict | None:
+    """The whole hook, in this process. The server calls this too (with outcome=False, then scores it in the background)."""
+    event = data.get("hook_event_name", "")
+    if event == "UserPromptSubmit":
+        return on_prompt(data)
+    if event == "Stop":
+        on_stop(data, outcome)
+    return None
+
+
+SERVER = os.getenv("REVIVE_SERVER", "http://127.0.0.1:8000")
+SERVER_TIMEOUT_S = 2.5
+# Per-prompt settings the server should apply as if it were this process.
+FORWARD_ENV = ("FAKE_STRAIN", "REVIVE_TAP", "REVIVE_COACH", "REVIVE_WHO")
+
+
+def via_server(data: dict) -> tuple[bool, dict | None]:
+    """(handled, output). handled=False only when no Revive server answered, so the caller can run in-process.
+    A slow server counts as handled: it already logged the events, so running again would double them."""
+    import socket
+    import urllib.error
+    import urllib.request
+
+    body = json.dumps({"data": data, "env": {k: os.environ[k] for k in FORWARD_ENV if k in os.environ}}).encode()
+    req = urllib.request.Request(f"{SERVER}/hook", data=body, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=SERVER_TIMEOUT_S) as r:
+            return True, json.loads(r.read() or b"{}").get("output")
+    except urllib.error.HTTPError:
+        return False, None  # something else on the port, or an old server without /hook
+    except (TimeoutError, socket.timeout):
+        _log_error("server timeout")
+        return True, None
+    except urllib.error.URLError as e:
+        if isinstance(e.reason, (TimeoutError, socket.timeout)):
+            _log_error("server timeout")
+            return True, None
+        return False, None  # connection refused: server not running
+
+
 def main() -> int:
     t0 = time.time()
     try:
         data = json.loads(sys.stdin.read() or "{}")
-        event = data.get("hook_event_name", "")
-        if event == "UserPromptSubmit":
-            on_prompt(data)
-        elif event == "Stop":
-            on_stop(data)
+        handled, out = (False, None) if os.getenv("REVIVE_INPROC") == "1" else via_server(data)
+        if not handled:
+            out = handle(data)
+        if out:
+            print(json.dumps(out))
     except Exception:
         _log_error("hook", t0)
     return 0
