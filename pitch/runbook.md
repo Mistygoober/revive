@@ -129,7 +129,7 @@ Do it **after** the hero takes. Its tap starts the 20-min tap cooldown.
 ⚠️ The detector logic was dry-run on these 3 prompts (fires: repeat, frustration, no progress), but **not yet through the real hook. Do it once at Test 2.** If Claude ran a test that **passed** in between, "no progress" is off and it won't fire. Start over in a fresh session.
 
 ### 3c. AI Wrapped card (video 80–90 s)
-**L** · http://172.20.10.10:8000/web/wrapped/?real=1&who=nbz
+**L** · http://172.20.10.10:8000/web/wrapped/?real=1
 ✅ Today's real numbers (demo events dropped), no DEMO DATA badge.
 
 ### 3d. Insights page (~5 s, optional, merged at `7e51eb7`)
@@ -174,7 +174,7 @@ Quit and restart `claude`. Run `! uv run pytest tests/test_rmssd.py -q` → red.
 | 0:50 | N | "Give me a three-word prompt for this bug." Types it **right away** (strain fades) | Score low → WRIST TAP; holds up the Garmin |
 | 1:10 | L | The decision log: hook → grader → body → tap + added failing test | The log lines for this prompt |
 | 1:25 | L | The validity numbers (1.42×, n 60 vs 48, p 0.034; 7/10) | — |
-| 1:45 | L+N | Who pays; N shows the Wrapped card | `/web/wrapped/?real=1&who=nbz` |
+| 1:45 | L+N | Who pays; N shows the Wrapped card | `/web/wrapped/?real=1` |
 
 ⚠️ The judge's prompt is good → no action. "Correct, it only steps in when needed. Try a vaguer one."
 ⚠️ No buzz → the judge view still shows WRIST TAP sent; check the phone is locked.
