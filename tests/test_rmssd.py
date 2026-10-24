@@ -1,9 +1,14 @@
 """Tests for the RR cleaner + RMSSD core (nbz).
 
-The squat case is the hero bug: motion artifacts inject fake long RR
-intervals. Without the filter RMSSD explodes; with it, it stays sane.
+The squat case is the hero bug: motion artifacts inject fake RR intervals.
+Without the filter RMSSD explodes; with it, it stays sane.
 """
+import json
+from pathlib import Path
+
 from body.rmssd import classify_strain, clean_rr, rmssd
+
+SQUAT_FIXTURE = Path(__file__).resolve().parent.parent / "fixtures" / "squats_rr.jsonl"
 
 
 def _calm_rr(n: int, base: float = 850.0) -> list[float]:
@@ -54,6 +59,21 @@ def test_squat_artifacts_do_not_explode_rmssd():
     big = rmssd(unfiltered_clean, already_clean=True)
     assert big is not None and big > 300          # artifacts explode it
     assert raw is not None and raw < 20           # filter tames it
+
+
+def test_real_squat_fixture_hero_bug():
+    """The recorded squat trace (Polar H10 19C01935): raw motion artifacts
+    explode RMSSD; the filter brings it back to a plausible value."""
+    rows = [json.loads(ln) for ln in SQUAT_FIXTURE.read_text().splitlines() if ln.strip()]
+    rr = [v for r in rows for v in r.get("rr", [])]
+    assert len(rr) >= 20, "fixture too short to judge"
+
+    unfiltered = rmssd(rr, already_clean=True)   # --no-filter path: the hero bug
+    filtered = rmssd(rr)                          # with the artifact filter
+    assert unfiltered is not None and filtered is not None
+    assert unfiltered > 50, "expected artifacts to inflate RMSSD"
+    assert filtered < 40, "filter should tame RMSSD to a plausible value"
+    assert unfiltered > 2 * filtered, "filter should make a decisive difference"
 
 
 def test_classify_strain_thresholds():
