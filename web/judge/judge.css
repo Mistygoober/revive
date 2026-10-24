@@ -29,7 +29,8 @@ header {
   display: flex; justify-content: space-between; align-items: center;
   padding: 12px 24px; border-bottom: 1px solid var(--line); font-size: 24px;
 }
-.brand { font-weight: 800; letter-spacing: .06em; }
+.brand { font-weight: 800; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hright > * { white-space: nowrap; }
 .brand .dim { font-weight: 400; }
 .live { color: var(--good); }
 .live.off { color: var(--bad); }
@@ -56,9 +57,52 @@ canvas { width: 100%; height: 100%; min-height: 0; display: block; }
 .dot.good { background: var(--good); } .dot.mid { background: var(--mid); } .dot.bad { background: var(--bad); }
 .vline { display: inline-block; width: 3px; height: 14px; background: var(--act); vertical-align: -2px; }
 
-.now { padding: 10px 24px; display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow: hidden; }
+.now { position: relative; min-height: 0; overflow: hidden; }
+.nowbody { height: 100%; padding: 10px 24px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; scrollbar-width: thin; }
+.oneline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
+
+/* the intervention moment: covers NOW for ~5 s, then fades back */
+.flash {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; gap: 10px; padding: 24px; text-align: center;
+  background: #1b1430; border-left: 6px solid var(--act);
+  opacity: 0; visibility: hidden; transition: opacity .6s, visibility .6s;
+}
+.flash.show { opacity: 1; visibility: visible; transition: none; }
+.flash .icon { font-size: 88px; line-height: 1; }
+.flash .lbl { font-size: 60px; font-weight: 900; letter-spacing: .04em; color: var(--act); line-height: 1.05; }
+.flash .msg { font-size: 32px; font-weight: 600; }
+.flash .msg2 { font-size: 22px; color: var(--dim); }
+.flash.k-tap.show { animation: tapPulse 1s ease-in-out 3; }
+@keyframes tapPulse { 0%, 100% { background: #1b1430; } 50% { background: #4a2785; } }
+.flash.k-fix { background: #10202e; border-left-color: var(--hrv); }
+.flash.k-fix .icon { font-size: 56px; }
+.flash.k-fix .lbl { font-size: 40px; color: var(--hrv); }
+.flash.k-fix .msg { font-size: 24px; }
+.flash.k-hold { background: #2a2008; border-left-color: var(--mid); }
+.flash.k-hold .lbl { color: var(--mid); }
+@media (max-height: 700px), (max-width: 1000px) {
+  header { font-size: 18px; padding: 8px 16px; } .brand .dim { display: none; }
+  .badge.demo { font-size: 20px; }
+  #today, #ptype { display: none; }
+  .flash .icon { font-size: 56px; } .flash .lbl { font-size: 40px; } .flash .msg { font-size: 22px; }
+  footer { font-size: 17px; gap: 16px; } footer .small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash, .flash.show { transition: none; }
+  .flash.k-tap.show { animation: none; background: #3a2066; }
+  .log tr.fresh td { animation: none; }
+}
+@media (max-height: 860px) {
+  body { grid-template-rows: auto minmax(0, 1fr) minmax(0, 21vh) auto; }
+  .nowbody { gap: 4px; padding-top: 8px; }
+  .strain { font-size: 34px; } .sdot { width: 24px; height: 24px; }
+  .delta { font-size: 21px; } .score { font-size: 32px; } .action { font-size: 24px; }
+  .amsg, .got { font-size: 18px; } .intent { font-size: 17px; }
+  .metric .big { font-size: 34px; }
+}
 .strain { display: flex; align-items: center; gap: 14px; font-size: 40px; font-weight: 800; letter-spacing: .04em; line-height: 1.1; }
-.sdot { width: 30px; height: 30px; border-radius: 50%; background: var(--dim); }
+.sdot { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--dim); }
 .st-calm { color: var(--good); } .st-calm .sdot { background: var(--good); }
 .st-elevated { color: var(--mid); } .st-elevated .sdot { background: var(--mid); }
 .st-strained { color: var(--bad); } .st-strained .sdot { background: var(--bad); box-shadow: 0 0 18px var(--bad); }

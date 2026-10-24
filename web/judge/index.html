@@ -41,10 +41,12 @@
   </section>
 
   <section class="now">
+    <div id="flash" class="flash" aria-live="assertive"></div>
+    <div class="nowbody">
     <div class="label">NOW</div>
     <div class="strain"><span id="strainDot" class="sdot"></span><span id="strainTxt">—</span></div>
     <div id="strainDelta" class="delta">waiting for body data</div>
-    <div id="today" class="dim small"></div>
+    <div id="today" class="dim small oneline"></div>
 
     <div class="block">
       <div class="label">LAST PROMPT</div>
@@ -59,9 +61,10 @@
     </div>
 
     <div class="block">
-      <div class="label">ACTION</div>
+      <div class="label">ACTION <span id="actionAt" class="dim"></span></div>
       <div id="action" class="action dim">none yet</div>
       <div id="actionMsg" class="amsg"></div>
+    </div>
     </div>
   </section>
 </main>
@@ -76,7 +79,7 @@
   <span><b id="tPrompts">0</b> prompts</span>
   <span><b id="tNudges">0</b> nudges</span>
   <span><b id="tAccepted">0</b> solved after a nudge</span>
-  <span><b id="tSaved">—</b> turns saved</span>
+  <span id="tSavedWrap" hidden><b id="tSaved"></b> turns saved</span>
   <span class="grow"></span>
   <span class="dim small">associations, not causation · prompt text never leaves the laptop</span>
 </footer>
