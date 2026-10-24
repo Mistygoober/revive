@@ -24,6 +24,7 @@ Make the demo script in SPEC.md work end to end, reliably, for a 90-second video
 - test: TODO
 - test: `uv run pytest`
 - pre-demo check: `scripts/demo_check` (starts the server if needed, runs one vague prompt + one Stop through the real hook with FAKE_STRAIN=strained, REVIVE_TAP=0; PASS/FAIL per event, then removes its "demo-check" events and restores the tap cooldown). Restart the server after pulling, so the hook gets the fast path (POST /hook).
+- focus watcher (distraction + break taps during a work block): `uv run python -m focus.watch --minutes 45 [--demo]`
 - tunnel (only if needed): `ngrok http 8000`
 
 ## Fixed decisions (don't change)

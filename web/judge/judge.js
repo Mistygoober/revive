@@ -9,7 +9,7 @@ const GROUP_MS = 10_000;   // actions this close together are one intervention
 const LINK_MS = 30_000;    // an action this soon after a grade/loop answers it
 const FRESH_MS = 2500;
 
-const CH = { fix: "SILENT FIX", tap: "WRIST TAP", voice: "VOICE", hold: "HOLD" };
+const CH = { fix: "SILENT FIX", tap: "WRIST TAP", voice: "VOICE", hold: "HOLD", focus: "BACK TO TASK", break: "TAKE 5" };
 const UNSCORED = new Set(["confirmation", "question", "exploration"]);
 const COLORS = {};
 
@@ -163,6 +163,7 @@ const chans = (a) => {
   if (a.tapped === true && !c.includes("tap")) c.push("tap");
   return c;
 };
+const isReceipt = (a) => a.medium && !a.channel && !Array.isArray(a.channels);
 const chanLabel = (c) => CH[c] || c.toUpperCase();
 const actionLabel = (a) => chans(a).map(chanLabel).join(" + ") || "ACTION";
 const groupLabel = (g) => [...new Set(g.items.flatMap((a) => chans(a).map(chanLabel)))].join(" + ") || "ACTION";
@@ -244,6 +245,16 @@ function renderNow() {
   }
   $("today").textContent = tp.length ? "Garmin today: " + tp.join(" · ") : "";
 
+  // focus watcher (focus/watch.py): one line, only while its events are fresh
+  let fl = $("focusLine");
+  if (!fl) { fl = document.createElement("div"); fl.id = "focusLine"; fl.className = "small oneline"; $("today").after(fl); }
+  const fe = [...events].reverse().find((e) => e.kind === "focus");
+  if (fe && Date.now() - fe._t < 90_000) {
+    const left = num(fe.block_left_min) != null ? ` · ${fe.block_left_min} min left` : "";
+    fl.innerHTML = (fe.distracted ? `<b class="bad-t">off task</b> · ${esc(fe.site || fe.app || "?")}` : `<b class="good-t">on task</b> · ${esc(fe.app || "?")}`) +
+      esc(left) + (fe.demo_thresholds ? '<span class="tag">demo timing</span>' : "");
+  } else fl.innerHTML = "";
+
   // last prompt
   const g = [...events].reverse().find((e) => e.kind === "grade");
   const scoreEl = $("score");
@@ -302,8 +313,8 @@ function renderLog() {
 
   for (const e of events) {
     const k = e.kind;
-    if (k === "body" || k === "prompt" || k === "reply") continue;
-    const row = { t: e._t, seen: "", did: "", none: false, demo: e.demo === true, fresh: fresh(e) };
+    if (k === "body" || k === "prompt" || k === "reply" || k === "focus") continue;
+    const row = { t: e._t, seen: "", did: "", none: false, demo: e.demo === true, timing: e.demo_thresholds === true, fresh: fresh(e) };
     if (k === "grade") {
       const sc = num(e.score);
       const st = strainOf(sampleAt(samples, e._t), base);
@@ -321,15 +332,18 @@ function renderLog() {
       row.did = "no action"; row.none = true;
       linkable.push(row);
     } else if (k === "action") {
+      // act.tap/say log their own receipt ({medium, text}); skip it when the caller logged the decision too
+      if (isReceipt(e) && events.some((o) => o.kind === "action" && !isReceipt(o) && Math.abs(o._t - e._t) <= GROUP_MS)) continue;
       const text = `${esc(actionLabel(e))}${e.message ? ` “${esc(e.message)}”` : ""}`;
-      const target = [...linkable].reverse().find((r) => e._t - r.t <= LINK_MS && e._t >= r.t - 1000);
+      const own = chans(e).some((c) => c === "focus" || c === "break");   // focus watcher: not an answer to a prompt
+      const target = own ? null : [...linkable].reverse().find((r) => e._t - r.t <= LINK_MS && e._t >= r.t - 1000);
       if (target) {
         target.did = target.none ? text : target.did + " + " + text;
         target.none = false;
         target.fresh = target.fresh || row.fresh;
         continue;
       }
-      row.seen = "coach"; row.did = text;
+      row.seen = e.reason && /^(distracted|active) /.test(e.reason) ? esc(e.reason) : "coach"; row.did = text;
       linkable.push(row);
     } else if (k === "outcome") {
       const pts = num(e.points) != null ? ` (${e.points}/3)` : "";
@@ -350,7 +364,7 @@ function renderLog() {
 
   const html = rows.slice(-14).reverse().map((r) =>
     `<tr class="${r.fresh ? "fresh" : ""}"><td class="t">${esc(fmtTime(r.t))}</td>` +
-    `<td>${r.seen}${r.demo ? '<span class="tag">DEMO</span>' : ""}</td>` +
+    `<td>${r.seen}${r.demo ? '<span class="tag">DEMO</span>' : ""}${r.timing ? '<span class="tag">demo timing</span>' : ""}</td>` +
     `<td class="arrow">${r.did ? "→" : ""}</td><td class="did${r.none ? " none" : ""}">${r.did}</td></tr>`
   ).join("") || '<tr><td class="dim">No decisions yet. Waiting for the first prompt.</td></tr>';
   if (html !== lastLogHtml) { $("logRows").innerHTML = html; lastLogHtml = html; }
@@ -392,14 +406,18 @@ const FLASH = {
   hold: { icon: "✋", label: "HOLD" },
   tap: { icon: "⌚", label: "WRIST TAP" },
   fix: { icon: "✚", label: "CONTEXT ADDED" },
+  focus: { icon: "⌚", label: "BACK TO TASK", css: "tap" },
+  break: { icon: "⌚", label: "TAKE 5", css: "tap" },
 };
-const RANK = { fix: 1, tap: 2, hold: 3 };
+const RANK = { fix: 1, tap: 2, focus: 2.5, break: 2.5, hold: 3 };
 let flash = null;   // {kind, msgs: [{rank, text}], at, until}
 let flashTimer = null;
 
 function flashKind(a) {
   const c = chans(a);
   if (c.includes("hold")) return "hold";
+  if (c.includes("focus")) return "focus";
+  if (c.includes("break")) return "break";
   if (c.includes("tap") || (num(a.level) ?? 0) >= 1) return "tap";
   return "fix";
 }
@@ -418,7 +436,7 @@ function showFlash(a) {
   const f = FLASH[flash.kind];
   el.innerHTML = `<div class="icon">${f.icon}</div><div class="lbl">${f.label}</div>` +
     flash.msgs.map((m, i) => `<div class="${i ? "msg2" : "msg"}">“${esc(m.text)}”</div>`).join("");
-  el.className = "flash k-" + flash.kind;
+  el.className = "flash k-" + (f.css || flash.kind);
   void el.offsetWidth;   // restart the pulse when the label upgrades
   el.classList.add("show");
   clearTimeout(flashTimer);
