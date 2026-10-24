@@ -1,0 +1,373 @@
+{
+  "generated_at": "2026-10-24T21:52:37+00:00",
+  "what": "Lucas's past Claude Code prompts (Oct 17-24, 2026): prompt score vs outcomes. Aggregates only.",
+  "wording": "Associations, not causes. Observational data from one person.",
+  "grader": "grader.prompt_score.grade_prompt (Claude Haiku 5.5, rubric v1)",
+  "grader_sources": {
+    "llm": 612
+  },
+  "grader_context": "prompt text only; Claude's previous reply and tool errors passed as metadata (length / yes-no), not text",
+  "data": {
+    "sessions": 70,
+    "sessions_with_prompts": 54,
+    "typed_prompts": 665,
+    "dropped_by_filter": {
+      "customer_name": 49,
+      "too_long": 3,
+      "portuguese": 1
+    },
+    "dropped_total": 53,
+    "kept": 612,
+    "graded": 612,
+    "sample": "all kept prompts",
+    "scored_types": 239,
+    "types": {
+      "exploration": 19,
+      "new_task": 97,
+      "follow_up": 142,
+      "confirmation": 118,
+      "question": 234,
+      "validation": 2
+    }
+  },
+  "scores": {
+    "mean": 2.76,
+    "median": 3,
+    "histogram_0_10": {
+      "0": 14,
+      "1": 47,
+      "2": 25,
+      "3": 95,
+      "4": 30,
+      "5": 16,
+      "6": 9,
+      "7": 1,
+      "8": 2,
+      "9": 0,
+      "10": 0
+    },
+    "weak_rate_under_4": 0.757,
+    "n_low_le_4": 211,
+    "n_high_ge_7": 3,
+    "bundled_rate": 0.188,
+    "check_zero_rate": {
+      "context": 0.192,
+      "done": 0.264,
+      "goal": 0.255,
+      "scope": 0.908,
+      "why": 0.879
+    },
+    "patterns": {
+      "directive": 120,
+      "task_iteration": 102,
+      "validation": 1,
+      "feedback_loop": 15,
+      "learning": 1
+    }
+  },
+  "validity_low_le4_vs_high_ge7": {
+    "turns_to_done": {
+      "definition": "your prompts from this one to the next turn with a task-list step completed or a wrap-up (1 = done this turn)",
+      "n_low": 145,
+      "n_high": 3,
+      "mean_low": 1.641,
+      "mean_high": 1.333,
+      "ratio_low_over_high": 1.23,
+      "permutation_p": 0.8152,
+      "cliffs_delta_low_vs_high": 0.062,
+      "spearman_score_all": -0.239,
+      "spearman_p": 0.003,
+      "n_all": 170
+    },
+    "achieved_rate": {
+      "definition": "turn ended with a completion signal and the next prompt was not a correction",
+      "n_low": 202,
+      "n_high": 3,
+      "rate_low": 0.46,
+      "rate_high": 0.667,
+      "ratio_low_over_high": 0.69,
+      "permutation_p": 0.5986,
+      "cliffs_delta_low_vs_high": -0.206,
+      "spearman_score_all": 0.234,
+      "spearman_p": 0.001,
+      "n_all": 229
+    },
+    "correction_rate": {
+      "definition": "next prompt starts with no / still / wrong / that's not / try again (and similar)",
+      "n_low": 196,
+      "n_high": 3,
+      "rate_low": 0.01,
+      "rate_high": 0.0,
+      "ratio_low_over_high": null,
+      "permutation_p": 1.0,
+      "cliffs_delta_low_vs_high": 0.01,
+      "spearman_score_all": 0.068,
+      "spearman_p": 0.4013,
+      "n_all": 221
+    },
+    "tool_errors_after": {
+      "definition": "tool errors before the next prompt",
+      "n_low": 211,
+      "n_high": 3,
+      "mean_low": 0.327,
+      "mean_high": 0.0,
+      "ratio_low_over_high": null,
+      "permutation_p": 0.7766,
+      "cliffs_delta_low_vs_high": 0.185,
+      "spearman_score_all": 0.026,
+      "spearman_p": 0.6992,
+      "n_all": 239
+    },
+    "request_turns_to_done": {
+      "definition": "prompts that open a fresh task list: prompts until its last completion signal",
+      "n_low": 58,
+      "n_high": 1,
+      "mean_low": 2.345,
+      "mean_high": 2.0,
+      "ratio_low_over_high": 1.17,
+      "permutation_p": null,
+      "cliffs_delta_low_vs_high": -0.431,
+      "spearman_score_all": 0.01,
+      "spearman_p": 0.944,
+      "n_all": 69
+    }
+  },
+  "checks_vs_outcomes_spearman": {
+    "context": {
+      "turns_to_done": -0.009,
+      "achieved": -0.003
+    },
+    "done": {
+      "turns_to_done": -0.259,
+      "achieved": 0.252
+    },
+    "goal": {
+      "turns_to_done": -0.286,
+      "achieved": 0.266
+    },
+    "scope": {
+      "turns_to_done": -0.096,
+      "achieved": 0.12
+    },
+    "why": {
+      "turns_to_done": -0.124,
+      "achieved": 0.128
+    }
+  },
+  "hour_of_day": {
+    "mean_score_by_local_hour": {
+      "0": {
+        "mean": 4,
+        "n": 3
+      },
+      "1": {
+        "mean": 1.92,
+        "n": 13
+      },
+      "2": {
+        "mean": 3,
+        "n": 2
+      },
+      "8": {
+        "mean": 4,
+        "n": 4
+      },
+      "9": {
+        "mean": 2.44,
+        "n": 16
+      },
+      "10": {
+        "mean": 2.76,
+        "n": 21
+      },
+      "11": {
+        "mean": 2.71,
+        "n": 14
+      },
+      "12": {
+        "mean": 2.83,
+        "n": 24
+      },
+      "13": {
+        "mean": 1.67,
+        "n": 6
+      },
+      "14": {
+        "mean": 3.59,
+        "n": 17
+      },
+      "15": {
+        "mean": 3,
+        "n": 16
+      },
+      "16": {
+        "mean": 2.27,
+        "n": 15
+      },
+      "17": {
+        "mean": 2.68,
+        "n": 31
+      },
+      "18": {
+        "mean": 3.08,
+        "n": 13
+      },
+      "19": {
+        "mean": 2.69,
+        "n": 16
+      },
+      "20": {
+        "mean": 2.12,
+        "n": 8
+      },
+      "21": {
+        "mean": 3,
+        "n": 2
+      },
+      "22": {
+        "mean": 3.23,
+        "n": 13
+      },
+      "23": {
+        "mean": 2.6,
+        "n": 5
+      }
+    },
+    "by_block": {
+      "night_22_04": {
+        "mean": 2.72,
+        "n": 36
+      },
+      "morning_05_11": {
+        "mean": 2.75,
+        "n": 55
+      },
+      "afternoon_12_17": {
+        "mean": 2.79,
+        "n": 109
+      },
+      "evening_18_21": {
+        "mean": 2.72,
+        "n": 39
+      }
+    },
+    "spearman_hour_vs_score": 0.03
+  },
+  "fatigue": {
+    "slope_points_per_active_hour_into_session": 0.124,
+    "spearman_active_time_vs_score": 0.063,
+    "permutation_p": 0.3263,
+    "n": 239,
+    "session_active_min_vs_mean_score_spearman": 0.21,
+    "n_sessions": 27
+  },
+  "tasks_and_sessions": {
+    "sessions_with_prompts": 54,
+    "sessions_using_task_lists": 38,
+    "tasks": 56,
+    "tasks_with_task_list": 40,
+    "tasks_done": 39,
+    "completion_rate": 0.975,
+    "turns_to_done_median": 7,
+    "turns_to_done_mean": 12.54,
+    "requests": 191,
+    "requests_done": 165,
+    "request_turns_to_done_median": 1,
+    "turns_with_completion_signal": 301,
+    "corrections_per_task_mean": 0.05,
+    "tool_errors_per_task_mean": 2.7,
+    "correction_prompts": 4,
+    "interrupted_turns": 2,
+    "session_active_min_median": 20.9,
+    "session_active_min_max": 159.8,
+    "session_length_min_median": 45.8,
+    "total_active_hours": 30.8,
+    "steps_left_undone_total": 12,
+    "sessions_ending_with_undone_steps": 3,
+    "sessions_by_start_hour": {
+      "0": 3,
+      "1": 2,
+      "2": 1,
+      "8": 3,
+      "9": 1,
+      "10": 7,
+      "11": 3,
+      "12": 4,
+      "13": 1,
+      "14": 3,
+      "15": 4,
+      "16": 5,
+      "17": 3,
+      "18": 3,
+      "19": 5,
+      "21": 1,
+      "22": 4,
+      "23": 1
+    }
+  },
+  "validity_bottom_vs_top_tertile": {
+    "split": "score <= 2 vs >= 4 (bottom vs top tertile of this data, middle left out)",
+    "turns_to_done": {
+      "n_low": 60,
+      "n_high": 48,
+      "mean_low": 1.8,
+      "mean_high": 1.271,
+      "ratio_low_over_high": 1.42,
+      "permutation_p": 0.0339,
+      "cliffs_delta_low_vs_high": 0.236,
+      "spearman_score_all": -0.239,
+      "spearman_p": 0.003,
+      "n_all": 170
+    },
+    "achieved": {
+      "n_low": 83,
+      "n_high": 56,
+      "rate_low": 0.446,
+      "rate_high": 0.732,
+      "ratio_low_over_high": 0.61,
+      "permutation_p": 0.0007,
+      "cliffs_delta_low_vs_high": -0.286,
+      "spearman_score_all": 0.234,
+      "spearman_p": 0.001,
+      "n_all": 229
+    },
+    "next_is_correction": {
+      "n_low": 82,
+      "n_high": 51,
+      "rate_low": 0.0,
+      "rate_high": 0.02,
+      "ratio_low_over_high": 0.0,
+      "permutation_p": 0.3894,
+      "cliffs_delta_low_vs_high": -0.02,
+      "spearman_score_all": 0.068,
+      "spearman_p": 0.4013,
+      "n_all": 221
+    },
+    "tool_errors": {
+      "n_low": 86,
+      "n_high": 58,
+      "mean_low": 0.349,
+      "mean_high": 0.431,
+      "ratio_low_over_high": 0.81,
+      "permutation_p": 0.6313,
+      "cliffs_delta_low_vs_high": -0.016,
+      "spearman_score_all": 0.026,
+      "spearman_p": 0.6992,
+      "n_all": 239
+    },
+    "request_turns_to_done": {
+      "n_low": 24,
+      "n_high": 20,
+      "mean_low": 2.708,
+      "mean_high": 2.15,
+      "ratio_low_over_high": 1.26,
+      "permutation_p": 0.6088,
+      "cliffs_delta_low_vs_high": -0.025,
+      "spearman_score_all": 0.01,
+      "spearman_p": 0.944,
+      "n_all": 69
+    }
+  },
+  "headline": "Across all 170 scored prompts with a known outcome, higher prompt scores are associated with fewer turns to done (Spearman -0.239, p=0.003) and, over 229, a higher achieved rate (Spearman 0.234, p=0.001). Rubric split: low-scored prompts (<=4, n=145) took 1.641 turns to done vs 1.333 for high-scored (>=7, n=3): ratio 1.23x, permutation p=0.8152, Cliff's delta 0.062. Achieved rate 0.46 vs 0.667 (p=0.5986); only 3 prompts scored >= 7, so that split is underpowered. Associated with, not caused by. 53 of 665 prompts dropped by the confidentiality filter before grading.",
+  "headline_tertile": "score <= 2 vs >= 4 (bottom vs top tertile of this data, middle left out): 1.8 vs 1.271 turns to done (ratio 1.42x, n=60 vs 48, permutation p=0.0339, Cliff's delta 0.236); achieved 0.446 vs 0.732 (n=83 vs 56, p=0.0007). Cut points are the score tertiles. Disclosure: a first, buggy cut (<=2 vs >=3, middle not left out) gave 1.24x turns, p=0.095, and achieved 0.45 vs 0.54, p=0.18. Associated with, not caused by."
+}
