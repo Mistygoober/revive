@@ -7,10 +7,12 @@ so the system always has something sane to show.
 
 Contract: docs/plan/FOR-NBZ.md.
 """
+import json
 import os
 from datetime import datetime
+from pathlib import Path
 
-from body.polar import HR_BASE, RMSSD_BASE, STALE_AFTER_S
+from body.polar import HR_BASE as _STRAP_HR_BASE, RMSSD_BASE, STALE_AFTER_S
 from shared.events import now_iso, read_events
 
 _FAKE = {
@@ -19,8 +21,23 @@ _FAKE = {
     "strained": {"hr": 96, "rmssd": 22.4},
 }
 
-# Until the real Garmin pull lands; always labeled, never claimed as live.
+# Fallback when body/baselines_nbz.json is missing; always labeled, never claimed as live.
 _TODAY = {"sleep_h": 5.4, "sleep_score": 61, "body_battery": 38, "stress": 44}
+HR_BASE = _STRAP_HR_BASE
+
+# Baselines from nbz's Garmin exports (body/baselines.py writes the JSON, aggregates only).
+# hr_base = median Garmin resting HR. rmssd_base stays the daytime chest-strap value:
+# Garmin overnight HRV runs higher than seated daytime RMSSD, and these exports have
+# no HRV anyway. Sleep isn't in the exports either, so sleep_h/sleep_score are null.
+try:
+    _G = json.loads((Path(__file__).with_name("baselines_nbz.json")).read_text())
+    HR_BASE = round(_G["baseline"]["resting_hr"] or HR_BASE)
+    _last = _G["last_day"]
+    _TODAY = {"sleep_h": _last["sleep_h"], "sleep_score": _last["sleep_score"],
+              "body_battery": _last["body_battery"], "stress": _last["stress"],
+              "date": _last["date"]}
+except (OSError, ValueError, KeyError):
+    pass
 
 
 def _age_seconds(ts: str) -> float:
@@ -61,7 +78,7 @@ def get_body_state() -> dict:
             "ts": ev["ts"],
             "hr": ev.get("hr"),
             "rmssd": ev.get("rmssd"),
-            "hr_base": ev.get("hr_base", HR_BASE),
+            "hr_base": HR_BASE,
             "rmssd_base": ev.get("rmssd_base", RMSSD_BASE),
             "strain": ev.get("strain", "calm"),
             "source": ev.get("source", "h10"),
