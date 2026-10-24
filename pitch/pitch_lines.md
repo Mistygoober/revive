@@ -3,7 +3,7 @@
 Lead with the work going wrong; the body is the *why* and the *when*. Lucas: the problem, how it works, the numbers. Noam: the body side and the live moment. Every number here comes from a file in the repo (sources at the bottom).
 
 ## The 2-minute live demo
-**Setup:** judge view full-screen on Lucas's laptop (`/web/judge/`), Noam's laptop with Claude Code open on the `hero-bug` branch, strap on, phone locked and on the hotspot.
+**Setup:** judge view full-screen on Lucas's laptop (`/web/judge/`), Noam's laptop with Claude Code open on a `take-N` branch from the `hero-red` tag, strap on, phone locked and on the hotspot.
 
 | Time | Who | What to say / do |
 | --- | --- | --- |
