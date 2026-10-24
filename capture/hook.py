@@ -49,7 +49,7 @@ def _grade(prompt: str, ctx: dict) -> dict:
 
 def _tap(text: str) -> bool:
     try:
-        from act.tap import tap  # nbz's version
+        from act import tap  # nbz's version (act/actions.py)
     except Exception:
         from coach.act_fallback import tap
     return tap(text)
