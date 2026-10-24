@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revive · AI Wrapped</title>
+<link rel="stylesheet" href="wrapped.css">
+</head>
+<body>
+<div id="stage" class="stage">
+  <header>
+    <div class="brand">REVIVE <span class="dim">·</span> <span class="accent">AI WRAPPED</span></div>
+    <div class="hright">
+      <span id="day" class="dim">—</span>
+      <span id="who" class="dim"></span>
+      <span id="badge" class="badge demo" hidden>DEMO DATA</span>
+    </div>
+  </header>
+
+  <main id="grid" class="grid">
+    <section class="tile">
+      <div class="label">PROMPTS SENT</div>
+      <div id="vPrompts" class="big">—</div>
+      <div id="lPrompts" class="line"></div>
+    </section>
+    <section class="tile">
+      <div class="label">AVERAGE PROMPT SCORE</div>
+      <div class="big"><span id="vScore">—</span><span class="unit">/10</span></div>
+      <div id="lScore" class="line"></div>
+    </section>
+    <section class="tile">
+      <div class="label">NUDGES</div>
+      <div id="vNudges" class="big act">—</div>
+      <div id="lNudges" class="line"></div>
+    </section>
+    <section class="tile">
+      <div class="label">TASKS ACHIEVED</div>
+      <div id="vTasks" class="big good">—</div>
+      <div id="lTasks" class="line"></div>
+    </section>
+    <section class="tile">
+      <div class="label">STRAIN MINUTES</div>
+      <div class="big bad"><span id="vStrain">—</span><span id="uStrain" class="unit">min</span></div>
+      <div id="lStrain" class="line"></div>
+    </section>
+    <section class="tile">
+      <div class="label">BEST HOUR</div>
+      <div id="vBest" class="big hrv">—</div>
+      <div id="lBest" class="line"></div>
+    </section>
+  </main>
+
+  <div id="empty" class="empty" hidden>
+    <div class="big">no data yet</div>
+    <div class="line dim">The card fills in as today's prompts, grades and body readings land in the event log.</div>
+  </div>
+
+  <div id="pattern" class="pattern" hidden>
+    <span class="label">PATTERN</span>
+    <span id="patternTxt"></span>
+  </div>
+
+  <footer>Revive · built today 1:45–6:30 PM · associations, not causes</footer>
+</div>
+
+<script src="wrapped.js"></script>
+</body>
+</html>
