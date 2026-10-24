@@ -1,7 +1,86 @@
-<!doctype html><meta charset="utf-8"><title>Revive · judge view (placeholder)</title>
-<body style="font:14px system-ui;background:#0e1116;color:#e7eaf0;padding:16px">
-<h1>Revive: behind the scenes</h1><p>Placeholder. Live events:</p><pre id="log"></pre>
-<script>
-const log=document.getElementById("log");
-new EventSource("/stream").onmessage=e=>{log.textContent=e.data+"\n"+log.textContent;};
-</script></body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revive · behind the scenes</title>
+<link rel="stylesheet" href="judge.css">
+</head>
+<body>
+<header>
+  <div class="brand">REVIVE <span class="dim">· behind the scenes ·</span> <span id="live" class="live">live</span> <span class="dim">·</span> <span id="who">—</span></div>
+  <div class="hright">
+    <span id="badge" class="badge real">REAL</span>
+    <span id="clock">--:--</span>
+    <span id="sensor" class="sensor">sensor —</span>
+  </div>
+</header>
+
+<main>
+  <section class="left">
+    <div class="metric">
+      <span class="label">HEART RATE</span>
+      <span id="hrNow" class="big">—</span><span class="unit">bpm</span>
+      <span id="hrBase" class="dim"></span>
+    </div>
+    <canvas id="hrChart"></canvas>
+    <div class="metric">
+      <span class="label">HRV (RMSSD)</span>
+      <span id="rmNow" class="big">—</span><span class="unit">ms</span>
+      <span id="rmBase" class="dim"></span>
+    </div>
+    <canvas id="rmChart"></canvas>
+    <div class="legend dim">
+      <span><i class="dot good"></i> good prompt</span>
+      <span><i class="dot mid"></i> so-so</span>
+      <span><i class="dot bad"></i> vague prompt</span>
+      <span><i class="vline"></i> Revive acted</span>
+      <span class="dash">- - personal baseline</span>
+      <span id="window">last 10 min</span>
+    </div>
+  </section>
+
+  <section class="now">
+    <div class="label">NOW</div>
+    <div class="strain"><span id="strainDot" class="sdot"></span><span id="strainTxt">—</span></div>
+    <div id="strainDelta" class="delta">waiting for body data</div>
+    <div id="today" class="dim small"></div>
+
+    <div class="block">
+      <div class="label">LAST PROMPT</div>
+      <div><span id="score" class="score">—</span> <span id="ptype" class="dim"></span></div>
+      <div id="missing" class="chips"></div>
+    </div>
+
+    <div class="block">
+      <div class="label">INTENT → GOT</div>
+      <div id="intent" class="intent dim">—</div>
+      <div id="got" class="got"></div>
+    </div>
+
+    <div class="block">
+      <div class="label">ACTION</div>
+      <div id="action" class="action dim">none yet</div>
+      <div id="actionMsg" class="amsg"></div>
+    </div>
+  </section>
+</main>
+
+<section class="log">
+  <div class="label">DECISION LOG <span class="dim">· newest first · what Revive saw → what it did</span></div>
+  <table><tbody id="logRows"></tbody></table>
+</section>
+
+<footer>
+  <span class="label">TODAY</span>
+  <span><b id="tPrompts">0</b> prompts</span>
+  <span><b id="tNudges">0</b> nudges</span>
+  <span><b id="tAccepted">0</b> solved after a nudge</span>
+  <span><b id="tSaved">—</b> turns saved</span>
+  <span class="grow"></span>
+  <span class="dim small">associations, not causation · prompt text never leaves the laptop</span>
+</footer>
+
+<script src="judge.js"></script>
+</body>
+</html>
