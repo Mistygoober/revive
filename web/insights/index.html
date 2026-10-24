@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revive · insights</title>
+<link rel="stylesheet" href="insights.css">
+</head>
+<body>
+<header>
+  <div class="brand">REVIVE <span class="dim">· insights</span></div>
+  <div class="hright">
+    <span id="badge" class="badge real" hidden>REAL</span>
+    <span id="who" class="dim">everyone</span>
+  </div>
+</header>
+<p class="intro dim">Nothing to open day to day. When you're curious, this is what Revive learned. No prompt text appears here.</p>
+
+<main>
+  <section id="today">
+    <h2>Today <span id="todayDate" class="dim"></span></h2>
+    <div id="todayEmpty" class="empty" hidden>No activity logged yet today. Once you prompt Claude Code with Revive running, this shows active time, prompts, average prompt score, nudges and strain minutes.</div>
+    <div id="todayBody">
+      <div class="grid">
+        <div class="stat"><div class="label">ACTIVE TIME</div><div class="big" id="sActive">—</div><div class="sub dim">gaps under 5 min merged</div></div>
+        <div class="stat"><div class="label">PROMPTS</div><div class="big" id="sPrompts">—</div><div class="sub dim" id="sScored"></div></div>
+        <div class="stat"><div class="label">AVG PROMPT SCORE</div><div class="big" id="sScore">—</div><div class="sub dim" id="sMissed"></div></div>
+        <div class="stat"><div class="label">NUDGES</div><div class="big" id="sNudges">—</div><div class="sub dim" id="sFollowed"></div></div>
+      </div>
+      <div class="row2">
+        <div class="chartbox">
+          <div class="label">SCORE BY HOUR <span class="dim">· bar = average, number = prompts</span></div>
+          <div id="hourChart" class="bars"></div>
+          <div id="hourEmpty" class="empty small" hidden>Bars appear once a prompt is scored (questions and confirmations aren't scored).</div>
+        </div>
+        <div class="list">
+          <div class="label">NUDGES BY TYPE</div>
+          <div id="nudgeTypes"></div>
+          <div class="label sp">FOCUS</div>
+          <div id="focus"></div>
+          <div class="label sp">STRAIN</div>
+          <div id="strain"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="learned">
+    <h2>What it learned <span id="learnedFrom" class="dim"></span></h2>
+    <div id="learnedEmpty" class="empty" hidden>No history yet. After a week of graded prompts, this shows whether better prompts go with fewer turns and more finished tasks.</div>
+    <div id="learnedBody">
+      <div class="grid">
+        <div class="stat"><div class="label">TURNS TO DONE</div><div class="big" id="lTurns">—</div><div class="sub dim" id="lTurnsSub"></div></div>
+        <div class="stat"><div class="label">ACHIEVED</div><div class="big" id="lAch">—</div><div class="sub dim" id="lAchSub"></div></div>
+        <div class="stat"><div class="label">PROMPTS GRADED</div><div class="big" id="lN">—</div><div class="sub dim" id="lNSub"></div></div>
+      </div>
+      <div class="label sp">WHICH CHECKS MATTER <span class="dim">· Spearman ρ with the outcome, higher = stronger</span></div>
+      <table class="checks"><thead><tr><th>check</th><th>fewer turns</th><th>achieved</th><th>missing in</th></tr></thead><tbody id="checks"></tbody></table>
+      <p class="note dim">Associations, not causes · one person · one week. Split: bottom vs top third of scores (≤2 vs ≥4), middle left out.</p>
+    </div>
+  </section>
+
+  <section id="body">
+    <h2>Your body <span id="bodyFrom" class="dim"></span></h2>
+    <div id="bodyEmpty" class="empty" hidden>No Garmin history yet. With 2+ weeks of exports, this shows your resting heart rate, Body Battery and stress baselines, the yardstick for today's strain.</div>
+    <div id="bodyBody">
+      <div class="grid">
+        <div class="stat"><div class="label">RESTING HR</div><div class="big" id="bHr">—</div><div class="sub dim" id="bHrSub"></div></div>
+        <div class="stat"><div class="label">BODY BATTERY</div><div class="big" id="bBb">—</div><div class="sub dim" id="bBbSub"></div></div>
+        <div class="stat"><div class="label">STRESS</div><div class="big" id="bStress">—</div><div class="sub dim" id="bStressSub"></div></div>
+        <div class="stat"><div class="label">STRAIN TODAY</div><div class="big" id="bStrain">—</div><div class="sub dim" id="bStrainSub"></div></div>
+      </div>
+      <p class="note dim" id="bodyMissing"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="dim small">associations, not causation · aggregates only · prompt text never leaves the laptop</footer>
+<script src="insights.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{
+  "history": {
+    "generated_at": "2026-10-24T21:52:37+00:00",
+    "dates": "Oct 17\u201324, 2026",
+    "who": "lucas",
+    "prompts_graded": 612,
+    "prompts_scored": 239,
+    "sessions": 54,
+    "mean_score": 2.76,
+    "split": "score <= 2 vs >= 4 (bottom vs top tertile of this data, middle left out)",
+    "turns_to_done": {
+      "n_low": 60,
+      "n_high": 48,
+      "mean_low": 1.8,
+      "mean_high": 1.271,
+      "ratio_low_over_high": 1.42,
+      "permutation_p": 0.0339,
+      "cliffs_delta_low_vs_high": 0.236
+    },
+    "achieved": {
+      "n_low": 83,
+      "n_high": 56,
+      "rate_low": 0.446,
+      "rate_high": 0.732,
+      "permutation_p": 0.0007,
+      "cliffs_delta_low_vs_high": -0.286
+    },
+    "spearman": {
+      "turns_to_done": {
+        "rho": -0.239,
+        "p": 0.003,
+        "n": 170
+      },
+      "achieved": {
+        "rho": 0.234,
+        "p": 0.001,
+        "n": 229
+      }
+    },
+    "checks": {
+      "context": {
+        "turns_to_done": -0.009,
+        "achieved": -0.003
+      },
+      "done": {
+        "turns_to_done": -0.259,
+        "achieved": 0.252
+      },
+      "goal": {
+        "turns_to_done": -0.286,
+        "achieved": 0.266
+      },
+      "scope": {
+        "turns_to_done": -0.096,
+        "achieved": 0.12
+      },
+      "why": {
+        "turns_to_done": -0.124,
+        "achieved": 0.128
+      }
+    },
+    "check_zero_rate": {
+      "context": 0.192,
+      "done": 0.264,
+      "goal": 0.255,
+      "scope": 0.908,
+      "why": 0.879
+    }
+  },
+  "body": {
+    "who": "nbz",
+    "date_range": [
+      "2026-10-01",
+      "2026-10-23"
+    ],
+    "n_days": 19,
+    "resting_hr": 69.0,
+    "n_resting_hr": 18,
+    "stress": 41,
+    "n_stress": 19,
+    "bb_high": 53,
+    "bb_low": 8,
+    "n_bb": 19,
+    "last_day": {
+      "date": "2026-10-23",
+      "sleep_h": null,
+      "sleep_score": null,
+      "body_battery": 67,
+      "body_battery_low": 18,
+      "stress": 35,
+      "resting_hr": 73
+    },
+    "missing": [
+      "sleep (no sleep messages in exports)",
+      "overnight HRV (no hrv_status messages in exports)"
+    ]
+  }
+}
