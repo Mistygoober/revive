@@ -1,0 +1,36 @@
+{
+  "who": "nbz",
+  "source": "garmin daily exports (FIT), aggregates only",
+  "date_range": [
+    "2026-10-01",
+    "2026-10-23"
+  ],
+  "n_days": 19,
+  "baseline": {
+    "resting_hr": 69.0,
+    "n_resting_hr": 18,
+    "stress": 41,
+    "n_stress": 19,
+    "bb_high": 53,
+    "n_bb_high": 19,
+    "bb_low": 8,
+    "n_bb_low": 19,
+    "overnight_hrv": null,
+    "n_overnight_hrv": 0,
+    "sleep_h": null,
+    "n_sleep_h": 0
+  },
+  "last_day": {
+    "date": "2026-10-23",
+    "sleep_h": null,
+    "sleep_score": null,
+    "body_battery": 67,
+    "body_battery_low": 18,
+    "stress": 35,
+    "resting_hr": 73
+  },
+  "missing": [
+    "sleep (no sleep messages in exports)",
+    "overnight HRV (no hrv_status messages in exports)"
+  ]
+}

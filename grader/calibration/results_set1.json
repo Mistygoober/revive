@@ -1,0 +1,91 @@
+{
+ "items": 10,
+ "scored": 7,
+ "within1": 4,
+ "within2": 5,
+ "unscored": 3,
+ "unscored_agree": 3,
+ "overall_agree": 7,
+ "rows": [
+  {
+   "id": 1,
+   "expert": 1,
+   "grader": 0,
+   "type": "new_task",
+   "source": "llm",
+   "verdict": "agree"
+  },
+  {
+   "id": 2,
+   "expert": 2,
+   "grader": 3,
+   "type": "follow_up",
+   "source": "llm",
+   "verdict": "agree"
+  },
+  {
+   "id": 3,
+   "expert": 9,
+   "grader": null,
+   "type": "confirmation",
+   "source": "llm",
+   "verdict": "agree (left alone)"
+  },
+  {
+   "id": 4,
+   "expert": 8,
+   "grader": 8,
+   "type": "new_task",
+   "source": "llm",
+   "verdict": "agree"
+  },
+  {
+   "id": 5,
+   "expert": 4,
+   "grader": 0,
+   "type": "new_task",
+   "source": "llm",
+   "verdict": "DISAGREE"
+  },
+  {
+   "id": 6,
+   "expert": 8,
+   "grader": 6,
+   "type": "new_task",
+   "source": "llm",
+   "verdict": "close"
+  },
+  {
+   "id": 7,
+   "expert": 8,
+   "grader": null,
+   "type": "question",
+   "source": "llm",
+   "verdict": "agree (left alone)"
+  },
+  {
+   "id": 8,
+   "expert": 8,
+   "grader": 8,
+   "type": "follow_up",
+   "source": "llm",
+   "verdict": "agree"
+  },
+  {
+   "id": 9,
+   "expert": 7,
+   "grader": 2,
+   "type": "follow_up",
+   "source": "heuristic",
+   "verdict": "DISAGREE"
+  },
+  {
+   "id": 10,
+   "expert": 8,
+   "grader": null,
+   "type": "question",
+   "source": "llm",
+   "verdict": "agree (left alone)"
+  }
+ ]
+}
