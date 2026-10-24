@@ -39,3 +39,13 @@ def test_stop_scores_outcome_after_response(tmp_log, monkeypatch):
 def test_thin_client_falls_back_when_no_server(tmp_log, monkeypatch):
     monkeypatch.setattr(hook, "SERVER", "http://127.0.0.1:9")  # nothing listens on the discard port
     assert hook.via_server({"hook_event_name": "Stop"}) == (False, None)
+
+
+def test_no_env_change_means_no_lock(tmp_log, monkeypatch):
+    monkeypatch.delenv("FAKE_STRAIN", raising=False)
+    with server._hook_lock:  # another session is mid-grade with an override
+        with server._hook_env({}):
+            pass  # would deadlock if it waited for the lock
+        monkeypatch.setenv("FAKE_STRAIN", "calm")
+        with server._hook_env({"FAKE_STRAIN": "calm"}):  # same value as already set: no lock either
+            pass

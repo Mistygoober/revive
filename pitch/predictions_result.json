@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-10-24T16:05:04-07:00",
+  "day": "2026-10-24",
+  "events_files": [
+    "data/events.jsonl"
+  ],
+  "n_events": 88,
+  "demo_excluded": true,
+  "floors": {
+    "min_scored_per_hour": 3,
+    "min_per_group": 5,
+    "min_loops": 3
+  },
+  "predictions": [
+    {
+      "id": 1,
+      "name": "Fatigue: prompts get worse as the day goes on",
+      "rule": "avg prompt score 4:15-5:15 PM at least 1 point below 1:45-2:45 PM",
+      "first_hour": {
+        "avg": 2.0,
+        "n": 1
+      },
+      "last_hour": {
+        "avg": null,
+        "n": 0
+      },
+      "note": "last hour still open (ends 5:15 PM)",
+      "verdict": "NOT ENOUGH DATA"
+    },
+    {
+      "id": 2,
+      "name": "Body x work: when nbz is strained, the AI work goes worse",
+      "rule": "strained prompts need >= 1.3x the turns to done, or reach 'achieved' less often (>= 5 prompts per group)",
+      "strained": {
+        "n": 0,
+        "achieved_rate": null,
+        "turns_to_done": null,
+        "n_done": 0
+      },
+      "calm": {
+        "n": 0,
+        "achieved_rate": null,
+        "turns_to_done": null,
+        "n_done": 0
+      },
+      "verdict": "NOT ENOUGH DATA"
+    },
+    {
+      "id": 3,
+      "name": "Loops: we get stuck more under gate pressure",
+      "rule": "at least 2 of every 3 loops start after the 3:30 PM gate",
+      "loops": 0,
+      "after_330": 0,
+      "share_after": null,
+      "verdict": "NOT ENOUGH DATA"
+    }
+  ]
+}

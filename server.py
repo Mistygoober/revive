@@ -48,7 +48,10 @@ _hook_lock = threading.Lock()
 @contextmanager
 def _hook_env(env: dict):
     """Apply the hook process's FAKE_STRAIN / REVIVE_TAP / ... for one call, then restore."""
-    env = {k: str(v) for k, v in (env or {}).items() if k in capture_hook.FORWARD_ENV}
+    env = {k: str(v) for k, v in (env or {}).items() if k in capture_hook.FORWARD_ENV and os.environ.get(k) != str(v)}
+    if not env:  # the usual case: nothing to change, so parallel sessions don't queue behind each other's grading
+        yield
+        return
     with _hook_lock:
         old = {k: os.environ.get(k) for k in env}
         os.environ.update(env)

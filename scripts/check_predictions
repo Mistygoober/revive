@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+"""Check the three predictions locked at 12:13 PM (pitch/predictions.md) against today's event log.
+
+Each prints TRUE / FALSE / NOT ENOUGH DATA with its numbers and n, and the result goes to
+pitch/predictions_result.json. Events marked "demo": true are left out.
+Only aggregates are written: no prompt text ever reaches the result.
+
+Run: scripts/check_predictions [--events data/events.jsonl --events nbz_events.jsonl] [--date 2026-10-24]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from datetime import date, datetime, time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+GREEN, RED, YELLOW, OFF = "\033[32m", "\033[31m", "\033[33m", "\033[0m"
+MIN_HOUR = 3       # scored prompts per hour for prediction 1 (our floor; predictions.md sets none)
+MIN_GROUP = 5      # prompts per group for prediction 2 (set in predictions.md)
+MIN_LOOPS = 3      # loops for prediction 3 (our floor; 1 of 1 would say nothing)
+BODY_MAX_AGE_S = 120  # a prompt takes the body state from the last body event at most 2 min before it
+
+
+def load(paths: list[Path], day: date) -> list[dict]:
+    out = []
+    for p in paths:
+        if not p.exists():
+            continue
+        for line in p.read_text(encoding="utf-8", errors="ignore").splitlines():
+            try:
+                e = json.loads(line)
+                t = datetime.fromisoformat(e["ts"]).astimezone()
+            except Exception:
+                continue
+            if e.get("demo") is True or t.date() != day:
+                continue
+            e["_t"] = t
+            out.append(e)
+    out.sort(key=lambda e: e["_t"])
+    return out
+
+
+def in_window(e: dict, start: str, end: str) -> bool:
+    return time.fromisoformat(start) <= e["_t"].time() < time.fromisoformat(end)
+
+
+def mean(xs: list[float]) -> float | None:
+    return round(sum(xs) / len(xs), 2) if xs else None
+
+
+def fatigue(events: list[dict], now: datetime, day: date) -> dict:
+    scores = [e for e in events if e["kind"] == "grade" and isinstance(e.get("score"), (int, float))]
+    first = [e["score"] for e in scores if in_window(e, "13:45", "14:45")]
+    last = [e["score"] for e in scores if in_window(e, "16:15", "17:15")]
+    r = {"id": 1, "name": "Fatigue: prompts get worse as the day goes on",
+         "rule": "avg prompt score 4:15-5:15 PM at least 1 point below 1:45-2:45 PM",
+         "first_hour": {"avg": mean(first), "n": len(first)}, "last_hour": {"avg": mean(last), "n": len(last)}}
+    if now.date() == day and now.time() < time.fromisoformat("17:15"):
+        r["note"] = "last hour still open (ends 5:15 PM)"
+    if len(first) < MIN_HOUR or len(last) < MIN_HOUR:
+        r["verdict"] = "NOT ENOUGH DATA"
+    else:
+        r["drop"] = round(mean(first) - mean(last), 2)
+        r["verdict"] = "TRUE" if r["drop"] >= 1 else "FALSE"
+    return r
+
+
+def body_strain(events: list[dict], i: int) -> str | None:
+    """Strain from the most recent body event before events[i], if it's fresh."""
+    t = events[i]["_t"]
+    for e in reversed(events[:i]):
+        if e["kind"] == "body" and e.get("strain"):
+            return e["strain"] if (t - e["_t"]).total_seconds() <= BODY_MAX_AGE_S else None
+    return None
+
+
+def body_x_work(events: list[dict]) -> dict:
+    groups = {"strained": [], "calm": []}
+    for i, e in enumerate(events):
+        if e["kind"] != "prompt" or e.get("who") != "nbz":
+            continue
+        strain = body_strain(events, i)
+        if strain not in groups:
+            continue
+        # this prompt's outcome: the first outcome in the same session before its next prompt
+        o = None
+        for later in events[i + 1:]:
+            if later.get("session") != e.get("session"):
+                continue
+            if later["kind"] == "prompt":
+                break
+            if later["kind"] == "outcome":
+                o = later
+                break
+        if o:
+            groups[strain].append(o)
+    stats = {}
+    for g, outs in groups.items():
+        ttd = [o["turns_to_done"] for o in outs if isinstance(o.get("turns_to_done"), (int, float))]
+        stats[g] = {"n": len(outs), "achieved_rate": round(sum(o.get("outcome") == "achieved" for o in outs) / len(outs), 2) if outs else None,
+                    "turns_to_done": mean(ttd), "n_done": len(ttd)}
+    r = {"id": 2, "name": "Body x work: when nbz is strained, the AI work goes worse",
+         "rule": "strained prompts need >= 1.3x the turns to done, or reach 'achieved' less often (>= 5 prompts per group)",
+         **stats}
+    s, c = stats["strained"], stats["calm"]
+    if s["n"] < MIN_GROUP or c["n"] < MIN_GROUP:
+        r["verdict"] = "NOT ENOUGH DATA"
+        return r
+    more_turns = bool(s["turns_to_done"] and c["turns_to_done"] and s["turns_to_done"] >= 1.3 * c["turns_to_done"])
+    less_achieved = s["achieved_rate"] < c["achieved_rate"]
+    if s["turns_to_done"] and c["turns_to_done"]:
+        r["turns_ratio"] = round(s["turns_to_done"] / c["turns_to_done"], 2)
+    r["verdict"] = "TRUE" if (more_turns or less_achieved) else "FALSE"
+    return r
+
+
+def loops(events: list[dict]) -> dict:
+    ls = [e for e in events if e["kind"] == "loop"]
+    gate = time.fromisoformat("15:30")
+    starts = [(e["_t"].timestamp() - 60 * float(e.get("minutes") or 0)) for e in ls]
+    after = sum(datetime.fromtimestamp(s).astimezone().time() >= gate for s in starts)
+    r = {"id": 3, "name": "Loops: we get stuck more under gate pressure",
+         "rule": "at least 2 of every 3 loops start after the 3:30 PM gate",
+         "loops": len(ls), "after_330": after, "share_after": round(after / len(ls), 2) if ls else None}
+    if len(ls) < MIN_LOOPS:
+        r["verdict"] = "NOT ENOUGH DATA"
+    else:
+        r["verdict"] = "TRUE" if after / len(ls) >= 2 / 3 else "FALSE"
+    return r
+
+
+def show(r: dict) -> None:
+    color = {"TRUE": GREEN, "FALSE": RED}.get(r["verdict"], YELLOW)
+    print(f"{color}{r['verdict']}{OFF}  {r['id']}. {r['name']}")
+    print(f"      rule: {r['rule']}")
+    if r["id"] == 1:
+        f, l = r["first_hour"], r["last_hour"]
+        print(f"      1:45-2:45 avg {f['avg']} (n={f['n']})  vs  4:15-5:15 avg {l['avg']} (n={l['n']})"
+              + (f"  drop {r['drop']}" if "drop" in r else ""))
+    elif r["id"] == 2:
+        for g in ("strained", "calm"):
+            s = r[g]
+            print(f"      {g:8}: n={s['n']}  achieved {s['achieved_rate']}  turns to done {s['turns_to_done']} (n={s['n_done']})")
+        if "turns_ratio" in r:
+            print(f"      turns ratio strained/calm: {r['turns_ratio']}")
+    else:
+        print(f"      loops: {r['loops']}, started after 3:30: {r['after_330']}, share {r['share_after']}")
+    if r.get("note"):
+        print(f"      note: {r['note']}")
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--events", action="append", type=Path, help="event log(s); default data/events.jsonl")
+    ap.add_argument("--date", type=date.fromisoformat, default=None, help="day to check (default today)")
+    ap.add_argument("--out", type=Path, default=ROOT / "pitch" / "predictions_result.json")
+    a = ap.parse_args()
+    now = datetime.now().astimezone()
+    day = a.date or now.date()
+    paths = a.events or [ROOT / "data" / "events.jsonl"]
+    events = load(paths, day)
+    results = [fatigue(events, now, day), body_x_work(events), loops(events)]
+    print(f"Predictions (locked 12:13 PM) checked {now:%-I:%M %p} on {day}, {len(events)} non-demo events\n")
+    for r in results:
+        show(r)
+    out = {"checked_at": now.isoformat(timespec="seconds"), "day": day.isoformat(),
+           "events_files": [str(p.relative_to(ROOT)) if p.resolve().is_relative_to(ROOT) else p.name for p in paths],
+           "n_events": len(events), "demo_excluded": True,
+           "floors": {"min_scored_per_hour": MIN_HOUR, "min_per_group": MIN_GROUP, "min_loops": MIN_LOOPS},
+           "predictions": results}
+    a.out.write_text(json.dumps(out, indent=2) + "\n")
+    print(f"\nwrote {a.out.relative_to(ROOT) if a.out.is_relative_to(ROOT) else a.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
