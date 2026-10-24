@@ -1,0 +1,12 @@
+[
+ {"id": 1, "prompt": "fix it", "context": {}, "lucas": 1},
+ {"id": 2, "prompt": "still broken", "context": {"last_assistant": "I added the filter to body/rmssd.py; the RMSSD test still fails.", "last_tool_error": "AssertionError: 812 > 100 in tests/test_rmssd.py"}, "lucas": 2},
+ {"id": 3, "prompt": "yes do it", "context": {"last_assistant": "Plan: 1) add the filter, 2) rerun the squat test. Go ahead?"}, "lucas": 9},
+ {"id": 4, "prompt": "In body/rmssd.py drop RR intervals under 300 or over 2000 ms so tests/test_rmssd.py passes; don't touch polar.py, because the coach misfires on squats.", "context": {}, "lucas": 8},
+ {"id": 5, "prompt": "make the judge view better", "context": {}, "lucas": 4},
+ {"id": 6, "prompt": "Add a /health endpoint to server.py that returns {ok: true}; curl localhost:8000/health should print it.", "context": {}, "lucas": 8},
+ {"id": 7, "prompt": "what does RMSSD actually measure?", "context": {}, "lucas": 8},
+ {"id": 8, "prompt": "print the hook input first, then fix the KeyError so the hook test passes", "context": {"last_assistant": "Here's the traceback.", "last_tool_error": "KeyError: 'prompt' in capture/hook.py line 31"}, "lucas": 8},
+ {"id": 9, "prompt": "refactor everything and also add dark mode and write the README and fix the tests", "context": {}, "lucas": 7},
+ {"id": 10, "prompt": "look at how coach/policy.py decides taps and tell me where the 20-minute cooldown lives", "context": {}, "lucas": 8}
+]
