@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""Pre-demo check: one vague prompt + one Stop through the real hook, end to end.
+
+Starts the server if it isn't running, pipes the events through capture/hook.py
+(same command as .claude/settings.json) with FAKE_STRAIN=strained and REVIVE_TAP=0,
+and checks that prompt, grade, action and outcome events reach data/events.jsonl
+within 10 s. Then removes its own events (session "demo-check") and restores the
+coach's tap cooldown, so the check never eats the real wrist tap.
+
+Run: scripts/demo_check   (exit 0 = all PASS)
+"""
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+SERVER = os.getenv("REVIVE_SERVER", "http://127.0.0.1:8000")
+EVENTS = ROOT / "data" / "events.jsonl"
+RAW = [ROOT / "memory" / "raw" / "prompts.jsonl", ROOT / "memory" / "raw" / "replies.jsonl"]
+COACH_STATE = ROOT / "data" / "coach_state.json"
+ERRORS = ROOT / "data" / "hook_errors.log"
+SESSION = "demo-check"
+TAG = f'"session": "{SESSION}"'
+DEADLINE_S = 10
+UV = str(Path.home() / ".local/bin/uv") if (Path.home() / ".local/bin/uv").exists() else (shutil.which("uv") or "uv")
+GREEN, RED, YELLOW, OFF = "\033[32m", "\033[31m", "\033[33m", "\033[0m"
+results: list[bool] = []
+
+
+def report(ok: bool, step: str, detail: str = "") -> None:
+    results.append(ok)
+    print(f"{GREEN + 'PASS' if ok else RED + 'FAIL'}{OFF}  {step}" + (f"  ({detail})" if detail else ""))
+
+
+def note(text: str) -> None:
+    print(f"{YELLOW}NOTE{OFF}  {text}")
+
+
+def get(path: str, timeout: float = 1.0) -> int | None:
+    try:
+        with urllib.request.urlopen(f"{SERVER}{path}", timeout=timeout) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+    except Exception:
+        return None
+
+
+def ensure_server() -> None:
+    if get("/health") == 200:
+        report(True, "server running", SERVER)
+    else:
+        port = SERVER.rsplit(":", 1)[-1].split("/")[0]
+        log = (ROOT / "data" / "server.log").open("a")
+        p = subprocess.Popen([UV, "run", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", port],
+                             cwd=ROOT, stdout=log, stderr=log, start_new_session=True)
+        t0 = time.time()
+        while time.time() - t0 < DEADLINE_S and get("/health") != 200:
+            time.sleep(0.3)
+        report(get("/health") == 200, "server started", f"pid {p.pid}, log data/server.log, left running")
+    # /hook only exists on a server started after the fast-hook commit; GET on it is 405 if present.
+    if get("/hook") == 405:
+        note("fast path on: the hook posts to the server")
+    else:
+        note("server has no /hook (started before the fast-hook change): hook runs in-process. Restart it for speed.")
+
+
+def run_hook(data: dict) -> tuple[float, str]:
+    env = {**os.environ, "FAKE_STRAIN": "strained", "REVIVE_TAP": "0", "REVIVE_SERVER": SERVER}
+    env.pop("REVIVE_INPROC", None)
+    t0 = time.time()
+    r = subprocess.run([UV, "run", "--quiet", "python", "capture/hook.py"], input=json.dumps(data),
+                       text=True, capture_output=True, cwd=ROOT, env=env, timeout=40)
+    return time.time() - t0, r.stdout
+
+
+def wait_for(kinds: list[str], since: int) -> dict[str, dict]:
+    """Poll the event log (bytes after `since`) until every kind has a demo-check event, or the deadline."""
+    found: dict[str, dict] = {}
+    t0 = time.time()
+    while time.time() - t0 < DEADLINE_S:
+        if EVENTS.exists():
+            with EVENTS.open("rb") as f:
+                f.seek(since)
+                for line in f.read().decode("utf-8", "ignore").splitlines():
+                    if TAG in line:
+                        try:
+                            e = json.loads(line)
+                        except json.JSONDecodeError:
+                            continue
+                        found.setdefault(e.get("kind"), e)
+        if all(k in found for k in kinds):
+            break
+        time.sleep(0.25)
+    return found
+
+
+def strip_tagged(path: Path) -> int:
+    """Remove this script's lines from a log, atomically. Returns how many went."""
+    if not path.exists():
+        return 0
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    keep = [line for line in lines if TAG not in line]
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text("".join(keep), encoding="utf-8")
+    os.replace(tmp, path)
+    return len(lines) - len(keep)
+
+
+def main() -> int:
+    os.chdir(ROOT)
+    ensure_server()
+    coach_state = COACH_STATE.read_bytes() if COACH_STATE.exists() else None
+    errors_at = ERRORS.stat().st_size if ERRORS.exists() else 0
+    transcript = Path(tempfile.mkdtemp()) / "demo-check.jsonl"
+    transcript.write_text("\n".join(json.dumps(x) for x in [
+        {"type": "user", "message": {"role": "user", "content": "the hrv number is wrong"}},
+        {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Edit", "input": {"file_path": "body/hrv.py"}}]}},
+        {"type": "user", "message": {"content": [{"type": "tool_result", "is_error": True,
+                                                  "content": "ZeroDivisionError: division by zero (body/hrv.py line 42)"}]}},
+        {"type": "assistant", "message": {"content": [{"type": "text", "text": "The RMSSD calculation fails when every beat is filtered."}]}},
+    ]))
+    base = {"session_id": SESSION, "cwd": str(ROOT), "transcript_path": str(transcript)}
+    try:
+        since = EVENTS.stat().st_size if EVENTS.exists() else 0
+        dt, out = run_hook({**base, "hook_event_name": "UserPromptSubmit", "prompt": "fix it"})
+        found = wait_for(["prompt", "grade", "action"], since)
+        report("prompt" in found, "prompt event", f"hook took {dt:.2f}s")
+        g = found.get("grade", {})
+        report("grade" in found, "grade event", f"score {g.get('score')}, {g.get('source')}, {g.get('latency_ms')} ms" if g else "")
+        a = found.get("action", {})
+        report("action" in found, "action event", f"level {a.get('level')}, {a.get('channels')}, tapped {a.get('tapped')}" if a else "")
+        try:
+            ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"] if out.strip() else ""
+        except Exception:
+            ctx = ""
+        report(bool(ctx), "silent fix (additionalContext)", f"{len(ctx)} chars" if ctx else "no hook output")
+
+        # Claude "finished" the turn: the Stop hook grades it against the prompt's intent.
+        since = EVENTS.stat().st_size if EVENTS.exists() else 0
+        final = "Fixed: rmssd() returns None when fewer than 20 clean beats remain; uv run pytest passes."
+        dt, _ = run_hook({**base, "hook_event_name": "Stop", "last_assistant_message": final})
+        o = wait_for(["outcome"], since).get("outcome", {})
+        report(bool(o), "outcome event", f"{o.get('outcome')} ({o.get('points')} pts), {o.get('source')}, stop hook {dt:.2f}s" if o else "")
+    finally:
+        removed = sum(strip_tagged(p) for p in [EVENTS, *RAW])
+        if coach_state is None:
+            COACH_STATE.unlink(missing_ok=True)
+        else:
+            COACH_STATE.write_bytes(coach_state)
+        shutil.rmtree(transcript.parent, ignore_errors=True)
+        print(f"      cleaned up {removed} demo-check lines; tap cooldown restored")
+    if ERRORS.exists() and ERRORS.stat().st_size > errors_at:
+        with ERRORS.open() as f:
+            f.seek(errors_at)
+            note("new lines in data/hook_errors.log:\n" + f.read()[-1500:])
+    ok = all(results)
+    print(f"\n{GREEN + 'PASS' if ok else RED + 'FAIL'}{OFF}  demo_check: {sum(results)}/{len(results)} steps")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
