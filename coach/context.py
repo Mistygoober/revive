@@ -66,3 +66,32 @@ def silent_fix_text(ctx: dict, missing: list[str]) -> str:
         parts.append("Before finishing, run the relevant test or command and say how you verified the fix.")
     text = "\n\n".join(parts)
     return text[:1500] if len(parts) > 1 else ""
+
+
+def _is_prompt(entry: dict) -> bool:
+    """A real user prompt (not a tool result, not a meta entry)."""
+    if entry.get("type") != "user" or entry.get("isMeta"):
+        return False
+    blocks = _content(entry)
+    return bool(blocks) and not any(isinstance(b, dict) and b.get("type") == "tool_result" for b in blocks)
+
+
+def last_turn(transcript_path: str) -> dict:
+    """What happened since the last user prompt: Claude's final text, tool errors, files changed (outcome score)."""
+    entries = _tail(transcript_path, 2000)
+    start = max((i for i, e in enumerate(entries) if _is_prompt(e)), default=-1)
+    final, errors, files = "", [], []
+    for e in entries[start + 1:]:
+        for block in _content(e):
+            if not isinstance(block, dict):
+                continue
+            if e.get("type") == "assistant" and block.get("type") == "text":
+                final = block.get("text", "")
+            if block.get("type") == "tool_use" and block.get("name") in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
+                fp = (block.get("input") or {}).get("file_path") or (block.get("input") or {}).get("notebook_path")
+                if fp and fp not in files:
+                    files.append(fp)
+            if block.get("type") == "tool_result" and block.get("is_error"):
+                c = block.get("content")
+                errors.append((c if isinstance(c, str) else json.dumps(c))[:500])
+    return {"assistant_final": final[-1500:], "tool_errors": errors[-5:], "files_changed": files[-20:]}

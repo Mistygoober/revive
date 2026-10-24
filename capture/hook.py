@@ -55,12 +55,14 @@ def on_prompt(data: dict) -> None:
 
     from body.state import get_body_state
     from coach.context import recent_context, silent_fix_text
+    from coach.outcome import looks_like_correction
     from coach.policy import decide
 
     prompt = data.get("prompt") or ""
     session = data.get("session_id", "")
     append_raw("prompts", {"session": session, "cwd": data.get("cwd", ""), "prompt": prompt})
-    append_event("prompt", session=session, chars=len(prompt), project=Path(data.get("cwd") or ".").name)
+    append_event("prompt", session=session, chars=len(prompt), project=Path(data.get("cwd") or ".").name,
+                 correction=looks_like_correction(prompt))
     if os.getenv("REVIVE_COACH", "1") == "0":
         return
 
@@ -88,6 +90,27 @@ def on_stop(data: dict) -> None:
     last = data.get("last_assistant_message") or ""
     append_raw("replies", {"session": session, "reply": last, "transcript": data.get("transcript_path", "")})
     append_event("reply", session=session, chars=len(last))
+    score_outcome(data)
+
+
+def score_outcome(data: dict) -> None:
+    """Outcome score for the turn that just ended. Errors are logged, never raised."""
+    import os
+
+    if os.getenv("REVIVE_COACH", "1") == "0":
+        return
+    try:
+        from coach.outcome import score_turn
+        score_turn(data)
+    except Exception:
+        _log_error("outcome")
+
+
+def _log_error(where: str, t0: float | None = None) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    took = f" ({time.time() - t0:.2f}s)" if t0 else ""
+    with (DATA_DIR / "hook_errors.log").open("a") as f:
+        f.write(f"{time.ctime()} [{where}]{took}\n{traceback.format_exc()}\n")
 
 
 def main() -> int:
@@ -100,9 +123,7 @@ def main() -> int:
         elif event == "Stop":
             on_stop(data)
     except Exception:
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        with (DATA_DIR / "hook_errors.log").open("a") as f:
-            f.write(f"{time.ctime()} ({time.time() - t0:.2f}s)\n{traceback.format_exc()}\n")
+        _log_error("hook", t0)
     return 0
 
 
