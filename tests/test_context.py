@@ -26,3 +26,25 @@ def test_passing_bang_command_is_ignored(tmp_path):
     out = "<bash-input>ls</bash-input><bash-stdout>README.md\nbody</bash-stdout><bash-stderr></bash-stderr>"
     path = _write(tmp_path, [{"type": "user", "message": {"role": "user", "content": out}}])
     assert recent_context(path)["last_error"] == ""
+
+
+def _prompt(text):
+    return {"type": "user", "message": {"role": "user", "content": text}}
+
+
+def _tool_error(text):
+    return {"type": "user", "message": {"role": "user", "content": [
+        {"type": "tool_result", "tool_use_id": "t", "is_error": True, "content": text}]}}
+
+
+def test_old_error_is_not_attached(tmp_path):
+    path = _write(tmp_path, [_prompt("set up the repo"), _tool_error("ancient failure"),
+                             _prompt("now write the readme"), _prompt("looks good"),
+                             _prompt("thanks")])
+    assert recent_context(path)["last_error"] == ""
+
+
+def test_error_from_last_turn_is_attached(tmp_path):
+    path = _write(tmp_path, [_prompt("set up the repo"), _prompt("run the tests"),
+                             _tool_error("1 failed")])
+    assert recent_context(path)["last_error"] == "1 failed"

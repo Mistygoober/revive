@@ -40,7 +40,11 @@ def recent_context(transcript_path: str) -> dict:
     """Last assistant text, last tool error, files touched, first prompt (session goal)."""
     entries = _tail(transcript_path)
     last_assistant, last_error, files, first_prompt = "", "", [], ""
-    for e in entries:
+    # Errors count only from the last two turns: an hour-old error is noise, not context.
+    prompts = [i for i, e in enumerate(entries) if _is_prompt(e)]
+    error_from = prompts[-2] if len(prompts) >= 2 else 0
+    for i, e in enumerate(entries):
+        recent = i >= error_from
         for block in _content(e):
             if not isinstance(block, dict):
                 continue
@@ -50,10 +54,10 @@ def recent_context(transcript_path: str) -> dict:
                 fp = (block.get("input") or {}).get("file_path")
                 if fp and fp not in files:
                     files.append(fp)
-            if block.get("type") == "tool_result" and block.get("is_error"):
+            if recent and block.get("type") == "tool_result" and block.get("is_error"):
                 c = block.get("content")
                 last_error = c if isinstance(c, str) else json.dumps(c)[:2000]
-            if e.get("type") == "user" and block.get("type") == "text":
+            if recent and e.get("type") == "user" and block.get("type") == "text":
                 shell_err = _shell_error(block.get("text", ""))
                 if shell_err:
                     last_error = shell_err[-2000:]
