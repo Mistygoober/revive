@@ -19,37 +19,59 @@ ARTIFACT_TOLERANCE = 0.20
 MIN_CLEAN_BEATS = 20
 
 
+def _valid_flags(rr_ms: list[float]) -> list[bool]:
+    """Per-beat validity: absolute range gate, then a rolling-median gate
+    against the last up-to-10 beats already accepted."""
+    accepted: list[float] = []
+    flags: list[bool] = []
+    for rr in rr_ms:
+        ok = rr is not None and RR_MIN_MS <= rr <= RR_MAX_MS
+        if ok:
+            window = accepted[-MEDIAN_WINDOW:]
+            if window:
+                med = median(window)
+                if med > 0 and abs(rr - med) / med > ARTIFACT_TOLERANCE:
+                    ok = False
+        if ok:
+            accepted.append(float(rr))
+        flags.append(ok)
+    return flags
+
+
 def clean_rr(rr_ms: list[float]) -> list[float]:
     """Return only the physiologically plausible, non-artifact RR intervals.
 
-    Two passes per beat: an absolute range gate, then a rolling-median gate
-    against the last up-to-10 beats we have already accepted.
+    For display/counts. RMSSD does NOT run on this list directly, because
+    dropping a beat would make its neighbours look consecutive; see rmssd().
     """
-    accepted: list[float] = []
-    for rr in rr_ms:
-        if rr is None:
-            continue
-        if rr < RR_MIN_MS or rr > RR_MAX_MS:
-            continue
-        window = accepted[-MEDIAN_WINDOW:]
-        if window:
-            med = median(window)
-            if med > 0 and abs(rr - med) / med > ARTIFACT_TOLERANCE:
-                continue
-        accepted.append(float(rr))
-    return accepted
+    flags = _valid_flags(rr_ms)
+    return [float(rr) for rr, ok in zip(rr_ms, flags) if ok]
 
 
 def rmssd(rr_ms: list[float], *, already_clean: bool = False) -> float | None:
     """Root mean square of successive RR differences, in ms.
 
-    Cleans first unless told the input is already clean. Returns None when
-    fewer than MIN_CLEAN_BEATS survive (too little to trust).
+    A successive difference is counted only between two beats that are
+    adjacent in the *original* stream and both valid -- never across a
+    removed artifact, which would invent a fake large difference and wreck
+    the estimate. Returns None when fewer than MIN_CLEAN_BEATS survive.
     """
-    clean = rr_ms if already_clean else clean_rr(rr_ms)
-    if len(clean) < MIN_CLEAN_BEATS:
+    if already_clean:
+        clean = [float(x) for x in rr_ms]
+        if len(clean) < MIN_CLEAN_BEATS:
+            return None
+        diffs = [clean[i + 1] - clean[i] for i in range(len(clean) - 1)]
+    else:
+        flags = _valid_flags(rr_ms)
+        if sum(flags) < MIN_CLEAN_BEATS:
+            return None
+        diffs = [
+            rr_ms[i + 1] - rr_ms[i]
+            for i in range(len(rr_ms) - 1)
+            if flags[i] and flags[i + 1]  # both valid AND adjacent in the raw stream
+        ]
+    if not diffs:
         return None
-    diffs = [clean[i + 1] - clean[i] for i in range(len(clean) - 1)]
     mean_sq = sum(d * d for d in diffs) / len(diffs)
     return round(mean_sq ** 0.5, 1)
 
