@@ -1,8 +1,19 @@
 """Reads the Claude Code transcript to build the grader's context and the silent fix."""
 import json
+import re
 from pathlib import Path
 
 MAX_LINES = 400
+_SHELL_OUT = re.compile(r"<bash-(?:stdout|stderr)>(.*?)(?:</bash-(?:stdout|stderr)>|$)", re.S)
+_FAILED = re.compile(r"\b(FAILED|failed|Error|Traceback|AssertionError|error:)")
+
+
+def _shell_error(text: str) -> str:
+    """Output of a failing `!` command the user ran inside Claude Code (e.g. a red test), else ""."""
+    if "<bash-stdout>" not in text and "<bash-stderr>" not in text:
+        return ""
+    out = "\n".join(m.strip() for m in _SHELL_OUT.findall(text) if m.strip())
+    return out if _FAILED.search(out) else ""
 
 
 def _tail(path: str, n: int = MAX_LINES) -> list[dict]:
@@ -42,6 +53,10 @@ def recent_context(transcript_path: str) -> dict:
             if block.get("type") == "tool_result" and block.get("is_error"):
                 c = block.get("content")
                 last_error = c if isinstance(c, str) else json.dumps(c)[:2000]
+            if e.get("type") == "user" and block.get("type") == "text":
+                shell_err = _shell_error(block.get("text", ""))
+                if shell_err:
+                    last_error = shell_err[-2000:]
             if e.get("type") == "user" and block.get("type") == "text" and not first_prompt:
                 t = block.get("text", "")
                 if t and not t.startswith("<"):
