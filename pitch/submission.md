@@ -14,7 +14,7 @@ As submitted. Today's numbers come from both laptops' event logs at 5:41 PM, dem
 >
 > Body data and raw prompts stay on the laptop; the repo holds aggregates only. What's real, replayed or mocked is listed in DEMO_NOTES.md.
 
-**Links:** GitHub https://github.com/Mistygoober/revive · Video: linked in the c0mpiled-16 submission (YouTube, 1:35)
+**Links:** GitHub https://github.com/Mistygoober/revive · Video https://www.youtube.com/watch?v=seFHgVrTFz0 (1:35)
 
 ## Judge questions, one line each
 | Question | Answer |

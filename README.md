@@ -7,7 +7,7 @@ Revive joins a Polar H10 heart strap with your Claude Code session. Claude Code 
 ![Live at c0mpiled-16: after squats, Noam's strap reads STRAINED, +50 bpm over his baseline; the right half is Revive's judge view](docs/img/live-tap.jpg)
 <sub>5:09 PM, live. Left: the camera on Noam after squats. Right: the judge view reading the strap: STRAINED, +50 bpm. The action on screen is the focus watcher's "Take 5" tap (demo timing). The prompt tap is in the second screenshot below.</sub>
 
-**Demo video (1:35):** linked in the c0mpiled-16 submission (YouTube) · **Built** Sat Oct 24, 2026, 1:45–6:30 PM at c0mpiled-16 (UCSD) · **Team** Lucas Bicudo, Noam Ben-Zion
+**[▶ Demo video (1:35)](https://www.youtube.com/watch?v=seFHgVrTFz0)** · **Built** Sat Oct 24, 2026, 1:45–6:30 PM at c0mpiled-16 (UCSD) · **Team** Lucas Bicudo, Noam Ben-Zion
 
 **Worn while we built it:** 110 prompts captured, 21 nudges, 13 wrist taps, 10 solved after a nudge ([pitch/today_numbers.json](pitch/today_numbers.json)) · 85 tests passing.
 
@@ -181,6 +181,3 @@ Timeline from the commit log: hooks at 2:41 PM, grader at 2:46, the fast `POST /
 - **Agents over per-person memory:** a health agent, a Claude-usage agent, a combined agent that joins the two, short-term and long-term memory agents, and a researcher that proposes small personal experiments.
 - **Two kinds of memory, kept apart:** raw facts (`memory/raw/`, never altered) and generated insights (`memory/insights/`, always labeled as generated).
 - Run the loop hold on a real session (built and unit-tested, never triggered today), wire the 19-day Garmin heart-rate baseline into the live strain label, and add more devices.
-
-## License
-[MIT](LICENSE)
