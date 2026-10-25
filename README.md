@@ -45,7 +45,7 @@ Right now `body/` is a labeled stub (fixed values, `source: "fake"`) until the H
 
 Source: [history/results.json](history/results.json), summary in [history/SUMMARY.md](history/SUMMARY.md). One person, one week, observational. Caveats in [DEMO_NOTES.md](DEMO_NOTES.md#validity-caveats-from-historysummarymd).
 
-**Today, built and worn at the event:** [__] prompts captured, [__] nudges, [__] solved after a nudge.
+**Today, built and worn at the event:** 110 prompts captured, 21 nudges (13 wrist taps), 10 solved after a nudge (both laptops' event logs, 1:45–5:45 PM, demo events excluded).
 
 **Predictions** (written 12:11 PM, before any code, locked at 12:13: [pitch/predictions.md](pitch/predictions.md)). Checked at 5:15 PM:
 | Prediction | Result |
