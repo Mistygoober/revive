@@ -51,25 +51,12 @@ def clean_rr(rr_ms: list[float]) -> list[float]:
 def rmssd(rr_ms: list[float], *, already_clean: bool = False) -> float | None:
     """Root mean square of successive RR differences, in ms.
 
-    A successive difference is counted only between two beats that are
-    adjacent in the *original* stream and both valid -- never across a
-    removed artifact, which would invent a fake large difference and wreck
-    the estimate. Returns None when fewer than MIN_CLEAN_BEATS survive.
+    Returns None when fewer than MIN_CLEAN_BEATS beats are available.
     """
-    if already_clean:
-        clean = [float(x) for x in rr_ms]
-        if len(clean) < MIN_CLEAN_BEATS:
-            return None
-        diffs = [clean[i + 1] - clean[i] for i in range(len(clean) - 1)]
-    else:
-        flags = _valid_flags(rr_ms)
-        if sum(flags) < MIN_CLEAN_BEATS:
-            return None
-        diffs = [
-            rr_ms[i + 1] - rr_ms[i]
-            for i in range(len(rr_ms) - 1)
-            if flags[i] and flags[i + 1]  # both valid AND adjacent in the raw stream
-        ]
+    beats = [float(x) for x in rr_ms]
+    if len(beats) < MIN_CLEAN_BEATS:
+        return None
+    diffs = [beats[i + 1] - beats[i] for i in range(len(beats) - 1)]
     if not diffs:
         return None
     mean_sq = sum(d * d for d in diffs) / len(diffs)
