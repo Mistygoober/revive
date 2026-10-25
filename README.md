@@ -181,3 +181,6 @@ Timeline from the commit log: hooks at 2:41 PM, grader at 2:46, the fast `POST /
 - **Agents over per-person memory:** a health agent, a Claude-usage agent, a combined agent that joins the two, short-term and long-term memory agents, and a researcher that proposes small personal experiments.
 - **Two kinds of memory, kept apart:** raw facts (`memory/raw/`, never altered) and generated insights (`memory/insights/`, always labeled as generated).
 - Run the loop hold on a real session (built and unit-tested, never triggered today), wire the 19-day Garmin heart-rate baseline into the live strain label, and add more devices.
+
+## License
+[MIT](LICENSE) © 2026 Lucas Bicudo and Noam Ben-Zion
