@@ -5,7 +5,7 @@
 > **Schedule changed (organizer email, Sat 11:35):** submissions are due **6:30 PM**, not 7:30, and hacking starts at **1:45**. We lose 45 minutes, so every gate moved earlier: **gate 3:30 · backup video 4:15 · freeze 5:15 · submit 6:10**. Tracks and the submission link are only announced at the 1:15 opening. **Every team member needs their own Luma registration**, so nbz must have one.
 Team: **Lucas** (Claude side) + **nbz** (health side, judge view, video). Locked Sat 10:30 AM.
 
-This page decides everything, so at the event we only build. **The full scope tree, big to small, with status:** [SCOPE.md](SCOPE.md) and the [Revive scope diagram](https://claude.ai/artifact/7sQQ1Q812bb39jxurPYwfk). The research and reasoning behind it are in [plan.md](plan.md), [decisions.md](decisions.md) and [research/](research/). If a rule announced at 1:00 changes something, use [If the rules change](#if-the-rules-change); don't re-plan from scratch.
+This page decides everything, so at the event we only build. **The full scope tree, big to small, with status:** [SCOPE.md](SCOPE.md) and a scope diagram (private, not in this repo). The research and reasoning behind it are in plan.md, decisions.md and research/, kept outside this repo; the prompt-scoring research is here as [prompt-scoring-research.md](prompt-scoring-research.md). If a rule announced at 1:00 changes something, use [If the rules change](#if-the-rules-change); don't re-plan from scratch.
 
 ---
 
@@ -155,7 +155,7 @@ Both sides build against these from minute one, so neither waits on the other. n
 | Coding | **Claude Code** on both laptops | nbz signs in through Lucas's Console invite. No `ANTHROPIC_API_KEY` in nbz's shell, or Claude Code bills that key. |
 | Language | Python 3.12 with **uv** | One `pyproject.toml`; `uv run` everywhere |
 | Sensor | **bleak** (Bluetooth LE) → H10 heart-rate service, RR intervals | RMSSD over a rolling 60 s window |
-| Grader | Anthropic API, **Claude Haiku 5.5** (`claude-haiku-5-5`) | Fast and cheap; the hook times out at 30 s, so aim for < 3 s, with a heuristic fallback (length, mentions a file or an error) if the call is slow. Store the key as `SW_ANTHROPIC_KEY` in `.env`, never `ANTHROPIC_API_KEY`. |
+| Grader | Anthropic API, **Claude Haiku 5.5** (`claude-haiku-5-5`) | Fast and cheap; the hook times out at 30 s, so aim for < 3 s, with a heuristic fallback (length, mentions a file or an error) if the call is slow. Store the key as `REVIVE_ANTHROPIC_KEY` in `.env` (the name the code uses), never `ANTHROPIC_API_KEY`. |
 | Hooks | Claude Code `UserPromptSubmit` + `Stop` | Can add context or block with a reason; can't rewrite the prompt |
 | Wrist tap | **ntfy.sh** (priority 5) → nbz's phone → Garmin smart notifications | Long random topic name |
 | Voice | macOS `say` → a speaker (not AirPods, so the camera hears it) | |
@@ -235,7 +235,7 @@ Most judges score only the form: description + GitHub + video. Two judges are re
 3. nbz does 20 squats: "I'm raising my heart rate on purpose; the real one happened at 4:09, it's in the log." (30 s)
 4. **The judge dictates a 3-word prompt** for nbz to type → wrist buzz, context added, solved. (30 s)
 5. The number and today's log. (20 s)
-6. Who pays, then questions. Answers to the hard questions are in [plan.md](plan.md#hard-questions-one-line-answers). (15 s)
+6. Who pays, then questions. Answers to the hard questions are in plan.md (outside this repo); the shipped versions are in [../../pitch/pitch_lines.md](../../pitch/pitch_lines.md). (15 s)
 
 ## 9. Submission (draft now, finish at 6:50)
 - **Title:** Revive
@@ -271,7 +271,7 @@ The opening and rules run 1:15–1:45, and tracks plus the submission link are o
 | 4 | Lucas | ~~Pair-test the H10 with the Mac~~ Done 11:30: connects, 88→134 bpm on squats, RR intervals present (needs the artifact filter above) | | ✅ |
 | 5 | Lucas | `gh auth status` OK; OBS installed; hotspot tested (uv is installed: `~/.local/bin/uv`) | 10 min | |
 | 6 | nbz | Accept the Console invite, install Claude Code, sign in, one test prompt; check `echo $ANTHROPIC_API_KEY` is empty | 15 min | Usage shows in Lucas's Console |
-| 7 | nbz | Garmin 30-day table done (per [nbz's guide](https://docs.google.com/document/d/1bzPzjAoNmYCeZKjfRULLuisEKQ3pD1zVMoG_AbCc5Zg/edit)) and sent to Lucas | 20 min | CSV received |
+| 7 | nbz | Garmin 30-day table done (per nbz's guide, a private doc not in this repo) and sent to Lucas | 20 min | CSV received |
 | 8 | nbz | ntfy app installed, subscribed to the topic, test push **buzzes the Garmin**; find "Broadcast Heart Rate" on the watch | 10 min | Wrist buzzed |
 | 9 | nbz | Python 3.12 + uv + git; GitHub username sent to Lucas | 10 min | |
 | 10 | Both | Read this page; write 3 predictions with a timestamp into `pitch/predictions.md` (e.g. "prompts get worse after the 3:30 gate", "loops happen after 5 PM", "prompts written at +15 bpm need more turns") | 10 min | Saved |

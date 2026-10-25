@@ -1,6 +1,6 @@
 # Revive metrics, by time window
 
-Draft, Sat Oct 24, 11:20. The question every metric answers: **how well is this person working with AI, and when does that change?** Prompt grading is one input; this page covers the rest. Research backing for the prompt rubric: [research/07-prompt-scoring.md](research/07-prompt-scoring.md) (in progress).
+Draft, Sat Oct 24, 11:20. The question every metric answers: **how well is this person working with AI, and when does that change?** Prompt grading is one input; this page covers the rest. Research backing for the prompt rubric: [prompt-scoring-research.md](prompt-scoring-research.md).
 
 ## What the data can actually see
 Checked on Lucas's history (70 sessions, Oct 17–24; counts only, no content read):

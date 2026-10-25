@@ -28,14 +28,14 @@ Lead with the work going wrong; the body is the *why* and the *when*. Lucas: the
 | n = 1? | Personal patterns are the point; for every number we show n, effect size and p, and we disclose the cut we tried first (1.24×, p = 0.095). More users would add population priors. |
 | Isn't it creepy? | It runs on your laptop and only you see it; body data never leaves it, prompts go only to Claude for grading (they were Claude prompts already), the focus watcher keeps the app and domain, never page titles or URLs, and there's no employer view. |
 | Is it medical? | No. It's performance coaching with no diagnosis; heart rate is one signal, not a cause. |
-| What breaks first? | The network: the wrist tap goes through ntfy, so we run on a phone hotspot. If the grader takes over 3 s, a heuristic score is used and labeled; if the strap slips, RMSSD shows blank instead of a fake number. |
-| Cost per prompt? | One Claude Haiku 5.5 call, at most 600 output tokens, 1.7–2.2 s through the running server; that's [__]¢ per prompt (today's Console spend ÷ prompts graded today). |
-| How do you know the grade is right? | On 10 prompts Lucas scored before seeing the grader, it agreed on 7 (within 1 point, or both left it unscored); where it disagreed it was stricter on vague asks. |
+| What breaks first? | The network: the wrist tap goes through ntfy, so we run on a phone hotspot. If the grader takes over 5 s, a heuristic score is used and labeled; if the strap slips, RMSSD shows blank instead of a fake number. |
+| Cost per prompt? | One Claude Haiku 5.5 call, at most 600 output tokens, 1.7–2.2 s through the running server. We didn't measure the cents per prompt today (it needs the Console spend, which isn't in the repo). |
+| How do you know the grade is right? | On 10 prompts Lucas scored before seeing the grader, it agreed on 7 (within 1 point, or it correctly left a question or confirmation unscored); where it disagreed it was stricter on vague asks. |
 
 ## Sources
 - 19 days of Garmin data: `body/baselines_nbz.json`
 - 1.42×, n = 60 vs. 48, p = 0.034; first cut 1.24×, p = 0.095: `history/results.json`, `history/SUMMARY.md`
 - 7 of 10: `grader/calibration/results_set1.json`
 - 90 s distraction, 90 min break, 20 s demo timing: `focus/watch.py`
-- 3 s cap, 600 output tokens: `grader/_llm.py`; 1.7–2.2 s: DEMO_NOTES.md (status at 3:25 PM)
+- 5 s cap, 600 output tokens: `grader/_llm.py`; 1.7–2.2 s: DEMO_NOTES.md (status at 3:25 PM)
 - $12/month: `docs/plan/GAMEPLAN.md` §1

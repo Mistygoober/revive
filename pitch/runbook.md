@@ -147,7 +147,7 @@ Pass = red → strained → tap + buzz + added test output → green, all in one
 
 | Drill | Do | Expect | Recover |
 | --- | --- | --- | --- |
-| No internet | Turn off Wi-Fi on N's laptop, then send `hrv is broken fix it` | Prompt still goes through (never blocked). Grade is labeled `heuristic` (3 s cap); action logged, **no buzz** | Wi-Fi back on. Say: "the tap needs internet; the coach still decided" |
+| No internet | Turn off Wi-Fi on N's laptop, then send `hrv is broken fix it` | Prompt still goes through (never blocked). Grade is labeled `heuristic` (5 s cap since `04c3507`); action logged, **no buzz** | Wi-Fi back on. Say: "the tap needs internet; the coach still decided" |
 | Strap drops | Ctrl+C tab 2 (or unclip it), wait 20 s | Judge view: **fake** + DEMO DATA badge; strain from FAKE_STRAIN (calm), so no tap | Restart tab 2 **on main**; badge gone within ~5 s |
 | Grader slow | Same as "No internet" (it's the same fallback) | `source: heuristic` on the grade line | Nothing to do |
 | Good prompt | Type: `In body/rmssd.py the squat tests fail: unfiltered RMSSD is 99 ms. Restore the artifact filter in rmssd() and run tests/test_rmssd.py to confirm green.` | Score ≥ 5, **no action**, no buzz | Say: "correct, it only steps in when needed" |
@@ -194,10 +194,10 @@ Quit and restart `claude`. Run `! uv run pytest tests/test_rmssd.py -q` → red.
 
 ## 7. Video script fixes needed (`pitch/video_script.md`, Lucas to approve)
 1. **Tag:** `hero-bug` → `hero-red` (shot 22–55 and recording plan step 1). `hero-bug` is Noam's recording commit and already has the filter, so its test is green.
-2. **The number:** "RMSSD [__] ms, should be ~5–20" → **"RMSSD 99 ms, filtered 17 ms"** (Noam's real squat fixture, commit `0753302`). In Sources, "~1,300 ms" is wrong; that was the 11:30 test, not today's recording.
+2. **The number:** the blank RMSSD value ("should be ~5–20") → **"RMSSD 99 ms, filtered 17 ms"** (Noam's real squat fixture, commit `0753302`). In Sources, "~1,300 ms" is wrong; that was the 11:30 test, not today's recording.
 3. **The file Claude edits:** `body/polar.py` → **`body/rmssd.py`**.
 4. **Caption** "context added: failing test + files" → **"context added: the failing test"**. A fresh session has no edited files, so the silent fix adds the test output and the "verify before finishing" line only.
 5. **Recording plan time:** "5:15–5:30" → **5:00–5:30** (the Geisel 1041 booking). Freeze tag at 5:15.
 6. **Before each take:** add "fresh `claude` session, `rm -f data/coach_state.json`, focus watcher off", and "run the red test with `!` inside Claude Code".
-7. **Focus take:** "Back to task, [__]m left" will read **45m** if the watcher was just started with `--minutes 45`.
+7. **Focus take:** the minutes-left blank in "Back to task" will read **45m** if the watcher was just started with `--minutes 45`.
 8. `pitch/pitch_lines.md` setup says "the `hero-bug` branch" → `hero-red`.

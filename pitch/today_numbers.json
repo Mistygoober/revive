@@ -1,0 +1,55 @@
+{
+  "what": "Today's live numbers (Sat Oct 24, 2026), aggregates only. No prompt text.",
+  "events_files": [
+    "data/events.jsonl (Lucas's laptop)",
+    "nbz_events.jsonl (Noam's laptop, copied at 5:41 PM)"
+  ],
+  "note_on_files": "The event logs are metadata only and git-ignored (data/ is in .gitignore); this file is the committed aggregate.",
+  "demo_excluded": "events marked demo: true are left out (scripted replays, fake body state)",
+  "window": "1:45 PM to 5:41 PM, the snapshot quoted in README.md, pitch/submission.md and the video",
+  "first_prompt_logged": "2:43 PM (the hooks landed at 2:41 PM)",
+  "prompts": 110,
+  "prompts_by_laptop": {
+    "lucas_laptop": 86,
+    "noam_laptop": 24
+  },
+  "graded": 110,
+  "nudges": 21,
+  "nudges_by_kind": {
+    "silent_fix_only": 8,
+    "silent_fix_and_wrist_tap": 5,
+    "focus_back_to_task_tap": 3,
+    "focus_take_5_tap": 5,
+    "loop_hold": 0
+  },
+  "wrist_taps": 13,
+  "tap_receipts_sent": 12,
+  "solved_after_nudge": 10,
+  "outcomes": {
+    "achieved": 54,
+    "partial": 36,
+    "missed": 6,
+    "wrong_direction": 2
+  },
+  "loops": 0,
+  "wrist_taps_by_source": {
+    "vague_prompt_while_strained": 5,
+    "focus_watcher": 8
+  },
+  "focus_watcher_note": "All focus-watcher taps today ran with --demo timing (20 s distraction / 2 min break thresholds instead of 90 s / 90 min) and are tagged demo_thresholds in the log.",
+  "tap_receipts_note": "tap_receipts_sent counts ntfy receipts logged with sent: true. One prompt tap (4:19 PM) is marked tapped: true by the hook but has no receipt line.",
+  "cooldown_note": "The coach taps at most once per 20 min; the cooldown file was deleted before each hero take (pitch/runbook.md), so prompt taps during takes are closer together.",
+  "recount_through_5_45_pm": {
+    "prompts": 112,
+    "nudges": 21,
+    "wrist_taps": 13,
+    "solved_after_nudge": 10
+  },
+  "recount_note": "Through 5:45 PM there are 2 more prompts (both logged at 5:41 PM on Lucas's laptop); the other counts are unchanged.",
+  "definitions": {
+    "prompt": "a UserPromptSubmit hook event",
+    "nudge": "one coach intervention: coach actions within 10 s of each other count once (silent fix, wrist tap, loop hold, focus tap), as in web/judge/judge.js actionGroups(); delivery receipts are not counted separately",
+    "wrist_tap": "a nudge whose channels include tap",
+    "solved_after_nudge": "the next outcome after the nudge (before the next nudge) was achieved, as in web/judge/judge.js renderToday()"
+  }
+}

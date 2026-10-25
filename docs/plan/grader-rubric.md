@@ -1,6 +1,6 @@
 # Revive grader rubric (v1, locked)
 
-Sat Oct 24, 11:20. Built from Lucas's draft v0 plus [research/07-prompt-scoring.md](research/07-prompt-scoring.md) (Anthropic, Claude Code, OpenAI, Google, Microsoft/GitHub, research). Weights and additions chosen by Lucas at 11:25.
+Sat Oct 24, 11:20. Built from Lucas's draft v0 plus [prompt-scoring-research.md](prompt-scoring-research.md) (Anthropic, Claude Code, OpenAI, Google, Microsoft/GitHub, research). Weights and additions chosen by Lucas at 11:25.
 
 ## The question it answers
 **"Given what Claude already knows at this point in the conversation, can it do the right thing on the first try?"** Not "is this a long or polished prompt". "yes, do it" right after Claude proposes a plan is a perfect prompt. Length-blind on purpose: LLM judges are known to favor longer answers (Zheng et al.).
